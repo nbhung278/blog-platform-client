@@ -12,6 +12,18 @@ export function useMyPosts() {
 	});
 }
 
+export function useFeed(limit = 20) {
+	return useQuery({
+		queryKey: ["feed", limit],
+		queryFn: async () => {
+			const res = await api.get<{ items: Post[]; nextCursor: string | null }>(
+				`/posts/feed?limit=${limit}`,
+			);
+			return res.data;
+		},
+	});
+}
+
 export function usePublicPosts(username: string) {
 	return useQuery({
 		queryKey: ["public-posts", username],
