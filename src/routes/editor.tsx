@@ -25,7 +25,7 @@ export default function EditorPage() {
 				const post = res.data.find((p: Post) => p.id === paramPostId);
 				if (post) {
 					setTitle(post.title);
-					setDraftContent(post.content);
+					setDraftContent(post.contentMd);
 					setPostId(post.id);
 					setVersion(post.version);
 				}
@@ -40,7 +40,8 @@ export default function EditorPage() {
 	const handleCreate = async () => {
 		const post = await createPost.mutateAsync({
 			title,
-			content: draftContent,
+			contentMd: draftContent,
+			contentHtml: draftContent,
 			status: "draft",
 		});
 		setPostId(post.id);

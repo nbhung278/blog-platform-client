@@ -15,13 +15,14 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.65.0",
+    "@tanstack/react-router": "^1.100.0",
+    "@uiw/react-md-editor": "^4.0.0",
+    "axios": "^1.7.0",
+    "isomorphic-dompurify": "^3.10.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@tanstack/react-router": "^1.100.0",
-    "@tanstack/react-query": "^5.65.0",
-    "zustand": "^5.0.0",
-    "@uiw/react-md-editor": "^4.0.0",
-    "axios": "^1.7.0"
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

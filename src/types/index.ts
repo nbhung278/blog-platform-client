@@ -13,11 +13,12 @@ export interface Post {
 	userId: string;
 	title: string;
 	slug: string;
-	content: string;
+	contentMd: string;
+	contentHtml: string;
 	excerpt: string | null;
 	coverUrl: string | null;
 	ogImageUrl: string | null;
-	status: "draft" | "published";
+	status: "draft" | "pending" | "published" | "rejected";
 	publishedAt: string | null;
 	readingTime: number;
 	viewCount: number;

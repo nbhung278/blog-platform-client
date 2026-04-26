@@ -21,6 +21,7 @@ export function useFeed(limit = 20) {
 			);
 			return res.data;
 		},
+		refetchInterval: 60_000,
 	});
 }
 
@@ -31,6 +32,7 @@ export function usePublicPosts(username: string) {
 			const res = await api.get<Post[]>(`/posts/public/${username}`);
 			return res.data;
 		},
+		refetchInterval: 60_000,
 	});
 }
 
@@ -50,7 +52,8 @@ export function useCreatePost() {
 	return useMutation({
 		mutationFn: async (data: {
 			title: string;
-			content: string;
+			contentMd: string;
+			contentHtml: string;
 			status?: string;
 			tags?: string[];
 		}) => {
