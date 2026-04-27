@@ -13,6 +13,11 @@ export default function Autosave({ postId, version, onVersionUpdate }: AutosaveP
 		useEditorStore();
 	const updatePost = useUpdatePost();
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const versionRef = useRef(version);
+
+	useEffect(() => {
+		versionRef.current = version;
+	}, [version]);
 
 	useEffect(() => {
 		intervalRef.current = setInterval(async () => {
@@ -24,7 +29,7 @@ export default function Autosave({ postId, version, onVersionUpdate }: AutosaveP
 				const updated = await updatePost.mutateAsync({
 					id: postId,
 					content: state.draftContent,
-					version,
+					version: versionRef.current,
 				});
 				onVersionUpdate(updated.version);
 				markSaved(state.draftContent);
@@ -42,7 +47,7 @@ export default function Autosave({ postId, version, onVersionUpdate }: AutosaveP
 		return () => {
 			if (intervalRef.current) clearInterval(intervalRef.current);
 		};
-	}, [postId, version]);
+	}, [postId]);
 
 	return (
 		<div className="mb-4 text-sm text-gray-500">

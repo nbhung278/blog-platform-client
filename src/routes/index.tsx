@@ -7,6 +7,7 @@ import DashboardPage from "./dashboard";
 import EditorPage from "./editor";
 import BlogUserPage from "./blog.$username";
 import BlogPostPage from "./blog.$username.$slug";
+import SearchPage from "./search";
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -60,6 +61,15 @@ const blogPostRoute = createRoute({
 	component: BlogPostPage,
 });
 
+const searchRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/search",
+	component: SearchPage,
+	validateSearch: (search: Record<string, unknown>) => ({
+		q: String(search.q ?? ""),
+	}),
+});
+
 export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
@@ -69,4 +79,5 @@ export const routeTree = rootRoute.addChildren([
 	editorRoute,
 	blogUserRoute,
 	blogPostRoute,
+	searchRoute,
 ]);

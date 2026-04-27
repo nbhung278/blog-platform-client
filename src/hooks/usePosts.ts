@@ -87,6 +87,19 @@ export function useUpdatePost() {
 	});
 }
 
+export function useSearchPosts(q: string) {
+	return useQuery({
+		queryKey: ["search", q],
+		queryFn: async () => {
+			const res = await api.get<{ items: Post[]; total: number }>(
+				`/posts/search?q=${encodeURIComponent(q)}`,
+			);
+			return res.data;
+		},
+		enabled: !!q.trim(),
+	});
+}
+
 export function useDeletePost() {
 	const queryClient = useQueryClient();
 

@@ -7,9 +7,7 @@ export function useLogin() {
 	return useMutation({
 		mutationFn: async (data: { email: string; password: string }) => {
 			const res = await api.post<AuthResponse>("/auth/login", data);
-			console.log("[auth] Login success, setting token...");
 			useAuthStore.getState().setAuth(res.data.token, res.data.user);
-			console.log("[auth] Token set:", !!useAuthStore.getState().token);
 			return res.data;
 		},
 	});

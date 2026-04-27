@@ -1,9 +1,48 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
-import { usePost } from "@/hooks/usePosts";
+import { usePost, useFeed } from "@/hooks/usePosts";
 import AIChatWidget from "@/components/chat/AIChatWidget";
-import TableOfContents from "@/components/blog/TableOfContents";
 import { sanitizeHtml } from "@/lib/sanitize";
+import SiteHeader from "@/components/layout/SiteHeader";
+
+function formatDate(iso: string) {
+	return new Date(iso).toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+	});
+}
+
+const ShareIcon = {
+	Facebook: () => (
+		<svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M24 12.073c0-6.627-5.373-12-12-12S0 5.446 0 12.073c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+		</svg>
+	),
+	X: () => (
+		<svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+		</svg>
+	),
+	LinkedIn: () => (
+		<svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+		</svg>
+	),
+};
+
+function SidebarSection({ title, children }: { title: string; children: React.ReactNode }) {
+	return (
+		<div>
+			<div className="mb-4 flex items-center gap-3">
+				<div className="h-px flex-1 bg-gray-200" />
+				<h3 className="text-xs font-semibold tracking-widest text-gray-400 uppercase">{title}</h3>
+				<div className="h-px flex-1 bg-gray-200" />
+			</div>
+			{children}
+		</div>
+	);
+}
 
 export default function BlogPostPage() {
 	const { username, slug } = useParams({ strict: false }) as {
@@ -11,17 +50,37 @@ export default function BlogPostPage() {
 		slug: string;
 	};
 	const { data: post, isLoading, isError } = usePost(slug);
+	const { data: feedData } = useFeed(6);
+	const [email, setEmail] = useState("");
+	const [subscribed, setSubscribed] = useState(false);
 
 	const cleanHtml = useMemo(() => (post ? sanitizeHtml(post.contentHtml) : ""), [post]);
 
+	useEffect(() => {
+		if (post) {
+			document.title = `Strix | ${post.title}`;
+			return () => {
+				document.title = "Strix";
+			};
+		}
+	}, [post]);
+
+	const recentPosts = (feedData?.items ?? []).filter((p) => p.slug !== slug).slice(0, 3);
+
+	const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
 	if (isLoading) {
-		return <div className="mx-auto max-w-3xl px-4 py-16 text-center text-gray-500">Loading...</div>;
+		return (
+			<div className="flex min-h-screen items-center justify-center font-sans text-gray-400">
+				Loading…
+			</div>
+		);
 	}
 	if (isError || !post) {
 		return (
-			<div className="mx-auto max-w-3xl px-4 py-16 text-center">
-				<p className="text-lg text-gray-600">Post not found.</p>
-				<Link to="/" className="mt-4 inline-block text-blue-600 hover:underline">
+			<div className="flex min-h-screen flex-col items-center justify-center gap-4 font-sans">
+				<p className="font-serif text-2xl text-gray-600">Post not found.</p>
+				<Link to="/" className="text-brand text-sm underline underline-offset-2">
 					← Back to home
 				</Link>
 			</div>
@@ -31,67 +90,194 @@ export default function BlogPostPage() {
 	const date = post.publishedAt ?? post.updatedAt;
 
 	return (
-		<div className="min-h-screen bg-white">
-			<header className="border-b">
-				<div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 text-sm">
-					<Link to="/" className="font-semibold">
-						Blog Platform
-					</Link>
+		<div className="min-h-screen bg-white font-sans">
+			<SiteHeader
+				navContent={
 					<Link
 						to="/blog/$username"
 						params={{ username }}
-						className="text-gray-600 hover:text-gray-900"
+						className="text-brand-mid hover:text-brand-dark text-sm transition-colors"
 					>
-						More from @{username}
+						More from @{username} →
 					</Link>
+				}
+			/>
+
+			{/* Cover image */}
+			{post.coverUrl && (
+				<div className="mx-auto max-w-7xl px-6 pt-10">
+					<img src={post.coverUrl} alt="" className="aspect-21/9 w-full rounded object-cover" />
 				</div>
-			</header>
+			)}
 
-			<article className="mx-auto max-w-3xl px-4 py-12">
-				{post.coverUrl && (
-					<img
-						src={post.coverUrl}
-						alt=""
-						className="mb-10 aspect-video w-full rounded-lg object-cover"
-					/>
-				)}
+			{/* Content + Sidebar */}
+			<div className="mx-auto max-w-7xl px-6 py-12">
+				<div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
+					{/* Article */}
+					<article>
+						{post.tags.length > 0 && (
+							<div className="mb-6 flex flex-wrap gap-2">
+								{post.tags.map((tag) => (
+									<span
+										key={tag}
+										className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium tracking-wide text-gray-500 uppercase"
+									>
+										{tag}
+									</span>
+								))}
+							</div>
+						)}
 
-				<div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-500">
-					<Link
-						to="/blog/$username"
-						params={{ username }}
-						className="text-gray-700 hover:underline"
-					>
-						@{username}
-					</Link>
-					<span>·</span>
-					<time>{new Date(date).toLocaleDateString()}</time>
-					<span>·</span>
-					<span>{post.readingTime} min read</span>
-					<span>·</span>
-					<span>{post.viewCount} views</span>
+						<h1 className="font-serif text-4xl leading-tight font-bold text-[#1a1a1a] md:text-5xl">
+							{post.title}
+						</h1>
+
+						<div className="mt-6 flex items-center gap-3">
+							{post.user?.avatarUrl ? (
+								<img
+									src={post.user.avatarUrl}
+									alt={post.user.name}
+									className="h-10 w-10 rounded-full object-cover"
+								/>
+							) : (
+								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-semibold text-gray-500">
+									{(post.user?.name ?? "?")[0].toUpperCase()}
+								</div>
+							)}
+							<div>
+								<p className="text-sm font-semibold text-gray-800">
+									By {post.user?.name ?? username}
+								</p>
+								<p className="text-xs text-gray-400">{formatDate(date)}</p>
+							</div>
+						</div>
+
+						{post.excerpt && (
+							<p className="mt-6 text-lg leading-relaxed text-gray-500">{post.excerpt}</p>
+						)}
+
+						<div className="mt-2 h-px bg-gray-100" />
+
+						<div className="post-content mt-8" dangerouslySetInnerHTML={{ __html: cleanHtml }} />
+					</article>
+
+					{/* Sidebar */}
+					<aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
+						{post.tags.length > 0 && (
+							<SidebarSection title="Category">
+								<div className="flex flex-wrap gap-2">
+									{post.tags.map((tag) => (
+										<span
+											key={tag}
+											className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700"
+										>
+											{tag}
+										</span>
+									))}
+								</div>
+							</SidebarSection>
+						)}
+
+						<SidebarSection title="Share">
+							<div className="flex gap-4">
+								<a
+									href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+									target="_blank"
+									rel="noreferrer"
+									className="text-gray-600 transition-colors hover:text-[#1877f2]"
+									aria-label="Share on Facebook"
+								>
+									<ShareIcon.Facebook />
+								</a>
+								<a
+									href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`}
+									target="_blank"
+									rel="noreferrer"
+									className="text-gray-600 transition-colors hover:text-gray-900"
+									aria-label="Share on X"
+								>
+									<ShareIcon.X />
+								</a>
+								<a
+									href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+									target="_blank"
+									rel="noreferrer"
+									className="text-gray-600 transition-colors hover:text-[#0a66c2]"
+									aria-label="Share on LinkedIn"
+								>
+									<ShareIcon.LinkedIn />
+								</a>
+							</div>
+						</SidebarSection>
+
+						<SidebarSection title="Sign up for Updates">
+							{subscribed ? (
+								<p className="text-sm text-gray-600">Thanks for subscribing! We'll be in touch.</p>
+							) : (
+								<form
+									onSubmit={(e) => {
+										e.preventDefault();
+										if (email) setSubscribed(true);
+									}}
+									className="flex overflow-hidden rounded border border-gray-200"
+								>
+									<input
+										type="email"
+										placeholder="Enter your email"
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
+										required
+										className="flex-1 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none"
+									/>
+									<button
+										type="submit"
+										className="bg-brand-mid px-3 py-2 text-xs font-semibold tracking-wide text-white transition-opacity hover:opacity-80"
+									>
+										Subscribe
+									</button>
+								</form>
+							)}
+						</SidebarSection>
+
+						{recentPosts.length > 0 && (
+							<SidebarSection title="Recent Articles">
+								<div className="flex flex-col gap-5">
+									{recentPosts.map((p) => (
+										<Link
+											key={p.id}
+											to="/blog/$username/$slug"
+											params={{ username: p.user?.username ?? "", slug: p.slug }}
+											className="group flex gap-3"
+										>
+											{p.coverUrl ? (
+												<img
+													src={p.coverUrl}
+													alt={p.title}
+													className="h-16 w-20 shrink-0 rounded object-cover"
+												/>
+											) : (
+												<div className="flex h-16 w-20 shrink-0 items-center justify-center rounded bg-gray-100">
+													<span className="font-serif text-2xl font-bold text-gray-300">
+														{p.title[0]}
+													</span>
+												</div>
+											)}
+											<div className="min-w-0 flex-1">
+												<p className="line-clamp-2 text-sm leading-snug font-semibold text-gray-800 group-hover:underline">
+													{p.title}
+												</p>
+												{p.publishedAt && (
+													<p className="mt-1 text-xs text-gray-400">{formatDate(p.publishedAt)}</p>
+												)}
+											</div>
+										</Link>
+									))}
+								</div>
+							</SidebarSection>
+						)}
+					</aside>
 				</div>
-
-				<h1 className="mb-4 text-4xl leading-tight font-bold text-gray-900">{post.title}</h1>
-
-				{post.excerpt && (
-					<p className="mb-8 text-lg leading-relaxed text-gray-600">{post.excerpt}</p>
-				)}
-
-				{post.tags.length > 0 && (
-					<div className="mb-10 flex flex-wrap gap-2">
-						{post.tags.map((tag) => (
-							<span key={tag} className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-								#{tag}
-							</span>
-						))}
-					</div>
-				)}
-
-				<TableOfContents content={post.contentMd} />
-
-				<div className="post-content" dangerouslySetInnerHTML={{ __html: cleanHtml }} />
-			</article>
+			</div>
 
 			<AIChatWidget />
 		</div>

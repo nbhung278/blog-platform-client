@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+	--font-serif: "Playfair Display", Georgia, serif;
+	--font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+	/* Brand palette */
+	--color-brand: #8b5e3c;
+	--color-brand-dark: #3d2b1f;
+	--color-brand-mid: #6b4c35;
+	--color-brand-hero: #ede8dd;
+	--color-brand-cream: rgb(245, 240, 232);
+	--color-brand-border: #ddd5c8;
+	--color-brand-surface: #faf8f4;
+}
+
 /* Rendered post content (Tiptap HTML output). Mirror the admin editor styling
    so authors see the same result on the public blog. */
 .post-content {
@@ -84,9 +98,21 @@
 	border-radius: 0.5rem;
 	margin: 1.5rem auto;
 	display: block;
+	clear: both;
 }
 .post-content hr {
 	border: none;
 	border-top: 1px solid rgb(229 231 235);
 	margin: 2rem 0;
+}
+
+/* Drop cap on first paragraph of article */
+.post-content > p:first-of-type::first-letter {
+	font-family: var(--font-serif);
+	font-size: 4.5em;
+	font-weight: 700;
+	float: left;
+	line-height: 0.75;
+	margin: 0.05em 0.1em -0.1em 0;
+	color: #1a1a1a;
 }

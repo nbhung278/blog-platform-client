@@ -6,14 +6,12 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 export const api = axios.create({
 	baseURL: API_URL,
 	headers: { "Content-Type": "application/json" },
+	timeout: 30_000,
 });
 
 // Attach JWT token to requests
 api.interceptors.request.use((config) => {
 	const token = useAuthStore.getState().token;
-	console.log(
-		`[api] ${config.method?.toUpperCase()} ${config.url} — token: ${token ? "yes" : "no"}`,
-	);
 	if (token) {
 		config.headers.Authorization = `Bearer ${token}`;
 	}
@@ -22,15 +20,10 @@ api.interceptors.request.use((config) => {
 
 // Handle 401 responses (don't logout on auth endpoints)
 api.interceptors.response.use(
-	(response) => {
-		console.log(`[api] ${response.status} ${response.config.url}`);
-		return response;
-	},
+	(response) => response,
 	(error) => {
-		console.error(`[api] ${error.response?.status} ${error.config?.url}`, error.message);
 		const isAuthEndpoint = error.config?.url?.includes("/auth/");
 		if (error.response?.status === 401 && !isAuthEndpoint) {
-			console.warn("[api] 401 on protected route — logging out");
 			useAuthStore.getState().logout();
 		}
 		return Promise.reject(error);
