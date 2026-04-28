@@ -8,12 +8,14 @@ interface TocItem {
 	id: string;
 }
 
+const HEADING_RE = /^(#{1,3})\s+(.+)/;
+
 export default function TableOfContents({ content }: TableOfContentsProps) {
 	const headings: TocItem[] = [];
 	const lines = content.split("\n");
 
 	for (const line of lines) {
-		const match = line.match(/^(#{1,3})\s+(.+)/);
+		const match = line.match(HEADING_RE);
 		if (match) {
 			const level = match[1].length;
 			const text = match[2];

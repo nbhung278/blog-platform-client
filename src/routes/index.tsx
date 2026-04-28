@@ -1,13 +1,15 @@
+import { lazy } from "react";
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import App from "@/App";
-import HomePage from "./home";
-import LoginPage from "./login";
-import RegisterPage from "./register";
-import DashboardPage from "./dashboard";
-import EditorPage from "./editor";
-import BlogUserPage from "./blog.$username";
-import BlogPostPage from "./blog.$username.$slug";
-import SearchPage from "./search";
+
+const HomePage = lazy(() => import("./home"));
+const LoginPage = lazy(() => import("./login"));
+const RegisterPage = lazy(() => import("./register"));
+const DashboardPage = lazy(() => import("./dashboard"));
+const EditorPage = lazy(() => import("./editor"));
+const BlogUserPage = lazy(() => import("./blog.$username"));
+const BlogPostPage = lazy(() => import("./blog.$username.$slug"));
+const SearchPage = lazy(() => import("./search"));
 
 const rootRoute = createRootRoute({
 	component: App,

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Post } from "@/types";
 import PostMeta from "./PostMeta";
 
-export default function FeaturedCard({ post }: { post: Post }) {
+const FeaturedCard = memo(function FeaturedCard({ post }: { post: Post }) {
 	return (
 		<Link
 			to="/blog/$username/$slug"
@@ -10,7 +11,12 @@ export default function FeaturedCard({ post }: { post: Post }) {
 			className="group border-brand-border bg-brand-surface flex flex-col overflow-hidden border transition-shadow hover:shadow-md"
 		>
 			{post.coverUrl ? (
-				<img src={post.coverUrl} alt={post.title} className="aspect-video w-full object-cover" />
+				<img
+					src={post.coverUrl}
+					alt={post.title}
+					loading="lazy"
+					className="aspect-video w-full object-cover"
+				/>
 			) : (
 				<div className="bg-brand-hero flex aspect-video w-full items-center justify-center">
 					<span className="text-brand-border font-serif text-5xl font-bold">{post.title[0]}</span>
@@ -29,4 +35,6 @@ export default function FeaturedCard({ post }: { post: Post }) {
 			</div>
 		</Link>
 	);
-}
+});
+
+export default FeaturedCard;

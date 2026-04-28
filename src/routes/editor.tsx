@@ -21,14 +21,12 @@ export default function EditorPage() {
 
 	useEffect(() => {
 		if (paramPostId && paramPostId !== "new") {
-			api.get<Post[]>(`/posts`).then((res) => {
-				const post = res.data.find((p: Post) => p.id === paramPostId);
-				if (post) {
-					setTitle(post.title);
-					setDraftContent(post.contentMd);
-					setPostId(post.id);
-					setVersion(post.version);
-				}
+			api.get<Post>(`/posts/${paramPostId}`).then((res) => {
+				const post = res.data;
+				setTitle(post.title);
+				setDraftContent(post.contentMd);
+				setPostId(post.id);
+				setVersion(post.version);
 			});
 		} else {
 			reset();

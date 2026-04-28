@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Post } from "@/types";
 
@@ -6,7 +7,7 @@ interface PostCardProps {
 	username: string;
 }
 
-export default function PostCard({ post, username }: PostCardProps) {
+const PostCard = memo(function PostCard({ post, username }: PostCardProps) {
 	const date = post.publishedAt ?? post.updatedAt;
 	return (
 		<Link
@@ -18,6 +19,7 @@ export default function PostCard({ post, username }: PostCardProps) {
 				<img
 					src={post.coverUrl}
 					alt=""
+					loading="lazy"
 					className="aspect-2/1 w-full object-cover transition group-hover:opacity-95"
 				/>
 			)}
@@ -41,4 +43,6 @@ export default function PostCard({ post, username }: PostCardProps) {
 			</div>
 		</Link>
 	);
-}
+});
+
+export default PostCard;

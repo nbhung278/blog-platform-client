@@ -19,12 +19,16 @@ export default function AIChatWidget() {
 		if (!input.trim() || isStreaming) return;
 
 		const userMessage = input.trim();
+		const assistantId = crypto.randomUUID();
 		setInput("");
-		setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+		setMessages((prev) => [
+			...prev,
+			{ id: crypto.randomUUID(), role: "user", content: userMessage },
+		]);
 		setIsStreaming(true);
 
 		let assistantContent = "";
-		setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+		setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
 
 		try {
 			for await (const event of streamChat(userMessage, sessionId)) {
@@ -33,7 +37,7 @@ export default function AIChatWidget() {
 					setMessages((prev) => {
 						const updated = [...prev];
 						updated[updated.length - 1] = {
-							role: "assistant",
+							...updated[updated.length - 1],
 							content: assistantContent,
 						};
 						return updated;
@@ -46,7 +50,7 @@ export default function AIChatWidget() {
 			setMessages((prev) => {
 				const updated = [...prev];
 				updated[updated.length - 1] = {
-					role: "assistant",
+					...updated[updated.length - 1],
 					content: "Sorry, something went wrong.",
 				};
 				return updated;
@@ -80,8 +84,8 @@ export default function AIChatWidget() {
 								Ask a question about the blog content
 							</p>
 						)}
-						{messages.map((msg, i) => (
-							<ChatMessage key={i} message={msg} />
+						{messages.map((msg) => (
+							<ChatMessage key={msg.id} message={msg} />
 						))}
 						<div ref={messagesEndRef} />
 					</div>

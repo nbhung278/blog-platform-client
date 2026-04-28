@@ -22,6 +22,7 @@ export function useFeed(limit = 20) {
 			return res.data;
 		},
 		refetchInterval: 60_000,
+		refetchIntervalInBackground: false,
 	});
 }
 
@@ -33,6 +34,7 @@ export function usePublicPosts(username: string) {
 			return res.data;
 		},
 		refetchInterval: 60_000,
+		refetchIntervalInBackground: false,
 	});
 }
 

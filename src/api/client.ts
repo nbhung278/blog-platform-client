@@ -67,10 +67,10 @@ export async function* streamChat(
 		const lines = buffer.split("\n");
 		buffer = lines.pop() || "";
 
-		for (const line of lines) {
-			if (line.startsWith("event: ")) {
-				const event = line.slice(7).trim();
-				const nextLine = lines[lines.indexOf(line) + 1];
+		for (let i = 0; i < lines.length; i++) {
+			if (lines[i].startsWith("event: ")) {
+				const event = lines[i].slice(7).trim();
+				const nextLine = lines[i + 1];
 				if (nextLine?.startsWith("data: ")) {
 					const data = nextLine.slice(6);
 					yield { type: event as "token" | "session_id", data };

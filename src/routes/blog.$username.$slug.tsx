@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { usePost, useFeed } from "@/hooks/usePosts";
-import AIChatWidget from "@/components/chat/AIChatWidget";
 import { sanitizeHtml } from "@/lib/sanitize";
+
+import { Suspense } from "react";
 import SiteHeader from "@/components/layout/SiteHeader";
+import SidebarRecentCard from "@/components/blog/SidebarRecentCard";
+
+const AIChatWidget = lazy(() => import("@/components/chat/AIChatWidget"));
 
 function formatDate(iso: string) {
 	return new Date(iso).toLocaleDateString("en-US", {
@@ -54,7 +58,7 @@ export default function BlogPostPage() {
 	const [email, setEmail] = useState("");
 	const [subscribed, setSubscribed] = useState(false);
 
-	const cleanHtml = useMemo(() => (post ? sanitizeHtml(post.contentHtml) : ""), [post]);
+	const cleanHtml = useMemo(() => sanitizeHtml(post?.contentHtml ?? ""), [post?.contentHtml]);
 
 	useEffect(() => {
 		if (post) {
@@ -106,7 +110,12 @@ export default function BlogPostPage() {
 			{/* Cover image */}
 			{post.coverUrl && (
 				<div className="mx-auto max-w-7xl px-6 pt-10">
-					<img src={post.coverUrl} alt="" className="aspect-21/9 w-full rounded object-cover" />
+					<img
+						src={post.coverUrl}
+						alt=""
+						loading="lazy"
+						className="aspect-21/9 w-full rounded object-cover"
+					/>
 				</div>
 			)}
 
@@ -241,36 +250,9 @@ export default function BlogPostPage() {
 
 						{recentPosts.length > 0 && (
 							<SidebarSection title="Recent Articles">
-								<div className="flex flex-col gap-5">
+								<div className="flex flex-col gap-6">
 									{recentPosts.map((p) => (
-										<Link
-											key={p.id}
-											to="/blog/$username/$slug"
-											params={{ username: p.user?.username ?? "", slug: p.slug }}
-											className="group flex gap-3"
-										>
-											{p.coverUrl ? (
-												<img
-													src={p.coverUrl}
-													alt={p.title}
-													className="h-16 w-20 shrink-0 rounded object-cover"
-												/>
-											) : (
-												<div className="flex h-16 w-20 shrink-0 items-center justify-center rounded bg-gray-100">
-													<span className="font-serif text-2xl font-bold text-gray-300">
-														{p.title[0]}
-													</span>
-												</div>
-											)}
-											<div className="min-w-0 flex-1">
-												<p className="line-clamp-2 text-sm leading-snug font-semibold text-gray-800 group-hover:underline">
-													{p.title}
-												</p>
-												{p.publishedAt && (
-													<p className="mt-1 text-xs text-gray-400">{formatDate(p.publishedAt)}</p>
-												)}
-											</div>
-										</Link>
+										<SidebarRecentCard key={p.id} post={p} />
 									))}
 								</div>
 							</SidebarSection>
@@ -279,7 +261,9 @@ export default function BlogPostPage() {
 				</div>
 			</div>
 
-			<AIChatWidget />
+			<Suspense fallback={null}>
+				<AIChatWidget />
+			</Suspense>
 		</div>
 	);
 }

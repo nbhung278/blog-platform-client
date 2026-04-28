@@ -1,36 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useFeed } from "@/hooks/usePosts";
-import type { Post } from "@/types";
 import SiteHeader from "@/components/layout/SiteHeader";
 import FeaturedCard from "@/components/blog/FeaturedCard";
 import PostMeta from "@/components/blog/PostMeta";
-
-function RecentCard({ post }: { post: Post }) {
-	return (
-		<Link
-			to="/blog/$username/$slug"
-			params={{ username: post.user?.username ?? "", slug: post.slug }}
-			className="group border-brand-border flex gap-4 border-b py-5"
-		>
-			<div className="flex-1">
-				<h3 className="text-brand-dark font-serif text-lg leading-snug font-bold group-hover:underline">
-					{post.title}
-				</h3>
-				{post.excerpt && <p className="text-brand-mid mt-1 line-clamp-2 text-sm">{post.excerpt}</p>}
-				<div className="mt-3">
-					<PostMeta post={post} />
-				</div>
-			</div>
-			{post.coverUrl && (
-				<img
-					src={post.coverUrl}
-					alt={post.title}
-					className="h-24 w-32 shrink-0 rounded object-cover"
-				/>
-			)}
-		</Link>
-	);
-}
+import RecentCard from "@/components/blog/RecentCard";
 
 export default function HomePage() {
 	const { data, isLoading, isError } = useFeed(20);
