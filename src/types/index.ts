@@ -32,6 +32,14 @@ export interface Post {
 	user?: Pick<User, "name" | "username" | "avatarUrl">;
 }
 
+export interface Category {
+	id: string;
+	name: string;
+	slug: string;
+	description: string | null;
+	postCount: number;
+}
+
 export interface AuthResponse {
 	token: string;
 	user: Pick<User, "id" | "email" | "name" | "username">;

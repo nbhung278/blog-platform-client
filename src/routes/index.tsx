@@ -10,6 +10,7 @@ const EditorPage = lazy(() => import("./editor"));
 const BlogUserPage = lazy(() => import("./blog.$username"));
 const BlogPostPage = lazy(() => import("./blog.$username.$slug"));
 const SearchPage = lazy(() => import("./search"));
+const CategoryPage = lazy(() => import("./category.$name"));
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -72,6 +73,12 @@ const searchRoute = createRoute({
 	}),
 });
 
+const categoryRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/category/$name",
+	component: CategoryPage,
+});
+
 export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
@@ -82,4 +89,5 @@ export const routeTree = rootRoute.addChildren([
 	blogUserRoute,
 	blogPostRoute,
 	searchRoute,
+	categoryRoute,
 ]);

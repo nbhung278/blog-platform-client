@@ -1,6 +1,7 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth.store";
+import { useCategories } from "@/hooks/usePosts";
 
 interface SiteHeaderProps {
 	navContent?: ReactNode;
@@ -36,6 +37,38 @@ function MenuIcon({ open }: { open: boolean }) {
 	);
 }
 
+function LoginIcon() {
+	return (
+		<svg
+			className="text-brand-mid h-5 w-5"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			strokeWidth={2}
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+			/>
+		</svg>
+	);
+}
+
+function ChevronDownIcon() {
+	return (
+		<svg
+			className="h-3.5 w-3.5"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			strokeWidth={2}
+		>
+			<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+		</svg>
+	);
+}
+
 function SearchBar({
 	onSubmit,
 	className = "",
@@ -65,10 +98,72 @@ function SearchBar({
 	);
 }
 
+interface CategoryItem {
+	id: string;
+	name: string;
+	slug: string;
+}
+
+function CategoriesDropdown({ categories }: { categories: CategoryItem[] }) {
+	const [open, setOpen] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		function handleClick(e: MouseEvent) {
+			if (!open) return;
+			if (ref.current && !ref.current.contains(e.target as Node)) {
+				setOpen(false);
+			}
+		}
+		document.addEventListener("mousedown", handleClick);
+		return () => document.removeEventListener("mousedown", handleClick);
+	}, [open]);
+
+	function handleSelect(slug: string) {
+		setOpen(false);
+		navigate({ to: "/category/$name", params: { name: slug } });
+	}
+
+	return (
+		<div ref={ref} className="relative">
+			<button
+				onClick={() => setOpen((o) => !o)}
+				className="text-brand-mid hover:text-brand-dark flex items-center gap-1 text-sm transition-colors hover:underline"
+			>
+				Categories
+				<ChevronDownIcon />
+			</button>
+
+			{open && (
+				<div className="bg-brand-surface border-brand-border absolute top-full left-0 z-50 mt-3 min-w-[220px] overflow-hidden rounded-lg border shadow-xl">
+					{categories.length === 0 ? (
+						<p className="text-brand-mid px-4 py-3 text-sm">No categories yet</p>
+					) : (
+						<div className="py-1.5">
+							{categories.map((cat) => (
+								<button
+									key={cat.id}
+									onClick={() => handleSelect(cat.slug)}
+									className="text-brand-dark hover:bg-brand-hero hover:text-brand group flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors"
+								>
+									<span className="bg-brand group-hover:bg-brand h-1.5 w-1.5 shrink-0 rounded-full opacity-0 transition-opacity group-hover:opacity-100" />
+									{cat.name}
+								</button>
+							))}
+						</div>
+					)}
+				</div>
+			)}
+		</div>
+	);
+}
+
 export default function SiteHeader({ navContent }: SiteHeaderProps) {
 	const user = useAuthStore((s) => s.user);
 	const navigate = useNavigate();
 	const [mobileOpen, setMobileOpen] = useState(false);
+	const { data: categories = [] } = useCategories();
 
 	function handleSearch(q: string) {
 		setMobileOpen(false);
@@ -77,8 +172,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 
 	return (
 		<header className="bg-brand-cream border-brand-border sticky top-0 z-50 border-b">
-			<div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-				{/* Logo */}
+			<div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-5">
 				<Link to="/" className="flex shrink-0 items-end gap-2.5">
 					<div className="bg-brand flex h-9 items-center justify-center px-2.5">
 						<span className="font-serif text-lg font-bold tracking-wide text-white">
@@ -88,11 +182,10 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 					<span className="text-brand-dark font-serif text-lg font-semibold">Code as Craft</span>
 				</Link>
 
-				{/* Desktop nav */}
 				{navContent ?? (
-					<nav className="hidden items-center gap-7 md:flex">
-						{user ? (
-							<>
+					<>
+						{user && (
+							<nav className="hidden items-center gap-6 md:flex">
 								<Link
 									to="/dashboard"
 									className="text-brand-mid hover:text-brand-dark text-sm transition-colors"
@@ -106,42 +199,58 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 								>
 									My blog
 								</Link>
-							</>
-						) : (
-							<>
+							</nav>
+						)}
+
+						<div className="flex-1" />
+
+						<div className="hidden items-center gap-3 md:flex">
+							<CategoriesDropdown categories={categories} />
+							<SearchBar onSubmit={handleSearch} />
+							{!user && (
 								<Link
 									to="/login"
-									className="text-brand-mid hover:text-brand-dark text-sm transition-colors"
+									className="text-brand-mid hover:text-brand-dark transition-colors"
+									aria-label="Login"
 								>
-									Login
+									<LoginIcon />
 								</Link>
-								<Link
-									to="/register"
-									className="bg-brand rounded px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-80"
-								>
-									Register
-								</Link>
-							</>
-						)}
-						<SearchBar onSubmit={handleSearch} />
-					</nav>
-				)}
+							)}
+						</div>
 
-				{/* Mobile hamburger */}
-				{!navContent && (
-					<button
-						className="text-brand-mid p-1 md:hidden"
-						onClick={() => setMobileOpen((o) => !o)}
-						aria-label="Toggle menu"
-					>
-						<MenuIcon open={mobileOpen} />
-					</button>
+						<div className="flex flex-1 justify-end md:hidden">
+							<button
+								className="text-brand-mid p-1"
+								onClick={() => setMobileOpen((o) => !o)}
+								aria-label="Toggle menu"
+							>
+								<MenuIcon open={mobileOpen} />
+							</button>
+						</div>
+					</>
 				)}
 			</div>
 
-			{/* Mobile menu */}
 			{!navContent && mobileOpen && (
 				<div className="border-brand-border bg-brand-cream flex flex-col gap-4 border-t px-6 py-4 md:hidden">
+					{categories.length > 0 && (
+						<div className="flex flex-col gap-2">
+							<p className="text-brand-mid text-xs font-medium tracking-wide uppercase">
+								Categories
+							</p>
+							{categories.map((cat) => (
+								<Link
+									key={cat.id}
+									to="/category/$name"
+									params={{ name: cat.slug }}
+									className="text-brand-mid text-sm"
+									onClick={() => setMobileOpen(false)}
+								>
+									{cat.name}
+								</Link>
+							))}
+						</div>
+					)}
 					{user ? (
 						<>
 							<Link
@@ -161,22 +270,13 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 							</Link>
 						</>
 					) : (
-						<>
-							<Link
-								to="/login"
-								className="text-brand-mid text-sm"
-								onClick={() => setMobileOpen(false)}
-							>
-								Login
-							</Link>
-							<Link
-								to="/register"
-								className="text-brand-mid text-sm"
-								onClick={() => setMobileOpen(false)}
-							>
-								Register
-							</Link>
-						</>
+						<Link
+							to="/login"
+							className="text-brand-mid text-sm"
+							onClick={() => setMobileOpen(false)}
+						>
+							Login
+						</Link>
 					)}
 					<SearchBar onSubmit={handleSearch} className="w-full" />
 				</div>

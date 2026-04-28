@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Post } from "@/types";
+import type { Category, Post } from "@/types";
 
 export function useMyPosts() {
 	return useQuery({
@@ -99,6 +99,30 @@ export function useSearchPosts(q: string) {
 			return res.data;
 		},
 		enabled: !!q.trim(),
+	});
+}
+
+export function usePostsByCategory(slug: string) {
+	return useQuery({
+		queryKey: ["posts-by-category", slug],
+		queryFn: async () => {
+			const res = await api.get<{ items: Post[]; total: number }>(
+				`/posts/search?category=${encodeURIComponent(slug)}`,
+			);
+			return res.data;
+		},
+		enabled: !!slug.trim(),
+	});
+}
+
+export function useCategories() {
+	return useQuery({
+		queryKey: ["categories"],
+		queryFn: async () => {
+			const res = await api.get<Category[]>("/categories");
+			return res.data;
+		},
+		staleTime: Infinity,
 	});
 }
 
