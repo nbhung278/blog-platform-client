@@ -39,3 +39,17 @@ export function sanitizeHtml(html: string): string {
 		ADD_ATTR: ["target", "rel"],
 	});
 }
+
+// Returns the URL only if it parses to http(s). Rejects javascript:, data:,
+// file: etc. Use this before binding user-controlled URLs to `<img src>` or
+// `<a href>` so a tampered avatar field can't run scripts.
+export function safeImageUrl(url: string | null | undefined): string | null {
+	if (!url) return null;
+	try {
+		const parsed = new URL(url, window.location.origin);
+		if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+		return parsed.toString();
+	} catch {
+		return null;
+	}
+}

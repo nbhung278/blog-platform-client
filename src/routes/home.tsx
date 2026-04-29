@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useFeed } from "@/hooks/usePosts";
 import SiteHeader from "@/components/layout/SiteHeader";
+import SiteFooter from "@/components/layout/SiteFooter";
 import FeaturedCard from "@/components/blog/FeaturedCard";
 import PostMeta from "@/components/blog/PostMeta";
 import RecentCard from "@/components/blog/RecentCard";
@@ -14,7 +15,7 @@ export default function HomePage() {
 	const morePosts = posts.slice(4);
 
 	return (
-		<div className="min-h-screen font-sans">
+		<div className="flex min-h-screen flex-col font-sans">
 			<SiteHeader />
 
 			{/* Hero — cream section with stamp logo */}
@@ -116,6 +117,8 @@ export default function HomePage() {
 					<p className="text-brand-mid font-serif text-2xl">No posts published yet.</p>
 				</div>
 			)}
+
+			<SiteFooter />
 		</div>
 	);
 }

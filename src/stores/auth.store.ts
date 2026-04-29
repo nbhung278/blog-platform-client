@@ -1,24 +1,50 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { AxiosError } from "axios";
+import { api, invalidateCsrfCache, registerOnAuthLost } from "@/api/client";
 import type { User } from "@/types";
 
+export type AuthUser = Pick<User, "id" | "email" | "name" | "username">;
+
 interface AuthState {
-	token: string | null;
-	user: Pick<User, "id" | "email" | "name" | "username"> | null;
-	setAuth: (token: string, user: AuthState["user"]) => void;
+	user: AuthUser | null;
+	loading: boolean;
+	initialized: boolean;
+	setUser: (user: AuthUser | null) => void;
 	logout: () => void;
-	isAuthenticated: () => boolean;
+	loadMe: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>()(
-	persist(
-		(set, get) => ({
-			token: null,
-			user: null,
-			setAuth: (token, user) => set({ token, user }),
-			logout: () => set({ token: null, user: null }),
-			isAuthenticated: () => !!get().token,
-		}),
-		{ name: "auth-storage" },
-	),
-);
+export const useAuthStore = create<AuthState>((set) => ({
+	user: null,
+	loading: false,
+	initialized: false,
+
+	setUser: (user) => set({ user, initialized: true }),
+
+	logout: () => {
+		invalidateCsrfCache();
+		set({ user: null, initialized: true });
+	},
+
+	async loadMe() {
+		set({ loading: true });
+		try {
+			const { data } = await api.get<AuthUser>("/auth/me");
+			set({ user: data, initialized: true });
+		} catch (err) {
+			const status = err instanceof AxiosError ? err.response?.status : undefined;
+			if (status === 401) {
+				set({ user: null, initialized: true });
+			} else {
+				set({ initialized: true });
+			}
+		} finally {
+			set({ loading: false });
+		}
+	},
+}));
+
+registerOnAuthLost(() => {
+	invalidateCsrfCache();
+	useAuthStore.setState({ user: null, initialized: true });
+});

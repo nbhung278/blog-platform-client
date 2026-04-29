@@ -1,8 +1,91 @@
 @import "tailwindcss";
 
+/* Tiptap editor content styling */
+.tiptap {
+	line-height: 1.7;
+	color: var(--color-brand-dark);
+}
+.tiptap > * + * {
+	margin-top: 0.75em;
+}
+.tiptap h1 {
+	font-size: 1.875rem;
+	font-weight: 700;
+	margin-top: 1.5em;
+}
+.tiptap h2 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	margin-top: 1.25em;
+}
+.tiptap h3 {
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin-top: 1em;
+}
+.tiptap p {
+	margin: 0;
+}
+.tiptap ul,
+.tiptap ol {
+	padding-left: 1.5rem;
+}
+.tiptap ul {
+	list-style: disc;
+}
+.tiptap ol {
+	list-style: decimal;
+}
+.tiptap blockquote {
+	border-left: 3px solid var(--color-brand-border);
+	padding-left: 1rem;
+	color: var(--color-brand-mid);
+}
+.tiptap code {
+	background: rgb(243 244 246);
+	padding: 0.125rem 0.25rem;
+	border-radius: 0.25rem;
+	font-size: 0.875em;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.tiptap pre {
+	background: rgb(17 24 39);
+	color: rgb(243 244 246);
+	padding: 1rem;
+	border-radius: 0.5rem;
+	overflow-x: auto;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 0.875em;
+}
+.tiptap pre code {
+	background: transparent;
+	padding: 0;
+	color: inherit;
+}
+.tiptap a {
+	color: rgb(37 99 235);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.tiptap img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 0.5rem;
+}
+.tiptap p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	color: var(--color-brand-mid);
+	float: left;
+	height: 0;
+	pointer-events: none;
+}
+
 @theme {
 	--font-serif: "Playfair Display", Georgia, serif;
 	--font-sans: "Inter", system-ui, -apple-system, sans-serif;
+	--font-reading:
+		"Source Serif 4", "Source Serif Pro", "Iowan Old Style", "Apple Garamond", Baskerville,
+		"Times New Roman", serif;
 
 	/* Brand palette */
 	--color-brand: #8b5e3c;
@@ -17,9 +100,15 @@
 /* Rendered post content (Tiptap HTML output). Mirror the admin editor styling
    so authors see the same result on the public blog. */
 .post-content {
+	font-family: var(--font-reading);
 	line-height: 1.75;
 	color: rgb(31 41 55);
-	font-size: 1.0625rem;
+	font-size: 1.125rem;
+	letter-spacing: -0.003em;
+}
+.post-title {
+	font-family: var(--font-reading);
+	letter-spacing: -0.018em;
 }
 .post-content > * + * {
 	margin-top: 1em;
@@ -108,7 +197,7 @@
 
 /* Drop cap on first paragraph of article */
 .post-content > p:first-of-type::first-letter {
-	font-family: var(--font-serif);
+	font-family: var(--font-reading);
 	font-size: 4.5em;
 	font-weight: 700;
 	float: left;

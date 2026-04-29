@@ -8,6 +8,14 @@ export interface User {
 	plan: string;
 }
 
+export type PostStatus = "draft" | "pending" | "published" | "rejected";
+
+export interface CategorySummary {
+	id: string;
+	name: string;
+	slug: string;
+}
+
 export interface Post {
 	id: string;
 	userId: string;
@@ -18,7 +26,7 @@ export interface Post {
 	excerpt: string | null;
 	coverUrl: string | null;
 	ogImageUrl: string | null;
-	status: "draft" | "pending" | "published" | "rejected";
+	status: PostStatus;
 	publishedAt: string | null;
 	readingTime: number;
 	viewCount: number;
@@ -29,7 +37,28 @@ export interface Post {
 	version: number;
 	createdAt: string;
 	updatedAt: string;
-	user?: Pick<User, "name" | "username" | "avatarUrl">;
+	user?: { id?: string; name: string; username: string; avatarUrl: string | null };
+	categories?: { category: CategorySummary }[];
+}
+
+export interface PostInput {
+	title: string;
+	contentMd: string;
+	contentHtml: string;
+	excerpt?: string;
+	coverUrl?: string | null;
+	status?: PostStatus;
+	tags?: string[];
+	metaTitle?: string;
+	metaDesc?: string;
+	categoryIds: string[];
+}
+
+export interface PostsPage {
+	data: Post[];
+	total: number;
+	page: number;
+	limit: number;
 }
 
 export interface Category {
@@ -41,7 +70,6 @@ export interface Category {
 }
 
 export interface AuthResponse {
-	token: string;
 	user: Pick<User, "id" | "email" | "name" | "username">;
 }
 

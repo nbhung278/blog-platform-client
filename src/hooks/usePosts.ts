@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Category, Post } from "@/types";
+import type { Category, Post, PostInput, PostsPage } from "@/types";
 
 export function useMyPosts() {
 	return useQuery({
 		queryKey: ["my-posts"],
 		queryFn: async () => {
-			const res = await api.get<Post[]>("/posts");
-			return res.data;
+			const res = await api.get<PostsPage>("/posts");
+			return res.data.data;
 		},
 	});
 }
@@ -33,7 +33,10 @@ export function usePublicPosts(username: string) {
 			const res = await api.get<Post[]>(`/posts/public/${username}`);
 			return res.data;
 		},
-		refetchInterval: 60_000,
+		staleTime: 0,
+		refetchOnMount: "always",
+		refetchOnWindowFocus: true,
+		refetchInterval: 30_000,
 		refetchIntervalInBackground: false,
 	});
 }
@@ -48,22 +51,29 @@ export function usePost(slug: string) {
 	});
 }
 
+// Get post by ID — for editing flow. Includes contentMd/contentHtml + categories.
+export function usePostById(id: string | undefined) {
+	return useQuery({
+		queryKey: ["post-by-id", id],
+		queryFn: async () => {
+			const res = await api.get<Post>(`/posts/id/${id}`);
+			return res.data;
+		},
+		enabled: !!id,
+	});
+}
+
 export function useCreatePost() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (data: {
-			title: string;
-			contentMd: string;
-			contentHtml: string;
-			status?: string;
-			tags?: string[];
-		}) => {
+		mutationFn: async (data: PostInput) => {
 			const res = await api.post<Post>("/posts", data);
 			return res.data;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+			queryClient.invalidateQueries({ queryKey: ["public-posts"] });
 		},
 	});
 }
@@ -75,16 +85,17 @@ export function useUpdatePost() {
 		mutationFn: async ({
 			id,
 			...data
-		}: {
+		}: Partial<PostInput> & {
 			id: string;
 			version: number;
-			[key: string]: unknown;
 		}) => {
 			const res = await api.patch<Post>(`/posts/${id}`, data);
 			return res.data;
 		},
-		onSuccess: () => {
+		onSuccess: (post) => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+			queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+			queryClient.invalidateQueries({ queryKey: ["post-by-id", post.id] });
 		},
 	});
 }
@@ -135,6 +146,7 @@ export function useDeletePost() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+			queryClient.invalidateQueries({ queryKey: ["public-posts"] });
 		},
 	});
 }

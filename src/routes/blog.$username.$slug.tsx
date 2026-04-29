@@ -1,11 +1,13 @@
 import { lazy, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { usePost, useFeed } from "@/hooks/usePosts";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml, safeImageUrl } from "@/lib/sanitize";
 
 import { Suspense } from "react";
 import SiteHeader from "@/components/layout/SiteHeader";
+import SiteFooter from "@/components/layout/SiteFooter";
 import SidebarRecentCard from "@/components/blog/SidebarRecentCard";
+import FollowButton from "@/components/blog/FollowButton";
 
 const AIChatWidget = lazy(() => import("@/components/chat/AIChatWidget"));
 
@@ -92,9 +94,10 @@ export default function BlogPostPage() {
 	}
 
 	const date = post.publishedAt ?? post.updatedAt;
+	const authorAvatar = safeImageUrl(post.user?.avatarUrl);
 
 	return (
-		<div className="min-h-screen bg-white font-sans">
+		<div className="flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader
 				navContent={
 					<Link
@@ -121,9 +124,9 @@ export default function BlogPostPage() {
 
 			{/* Content + Sidebar */}
 			<div className="mx-auto max-w-7xl px-6 py-12">
-				<div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
+				<div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,720px)_300px] lg:justify-between">
 					{/* Article */}
-					<article>
+					<article className="flex min-h-[60vh] w-full min-w-0 flex-col">
 						{post.tags.length > 0 && (
 							<div className="mb-6 flex flex-wrap gap-2">
 								{post.tags.map((tag) => (
@@ -137,15 +140,15 @@ export default function BlogPostPage() {
 							</div>
 						)}
 
-						<h1 className="font-serif text-4xl leading-tight font-bold text-[#1a1a1a] md:text-5xl">
+						<h1 className="post-title text-4xl leading-tight font-bold wrap-break-word text-[#1a1a1a] md:text-5xl">
 							{post.title}
 						</h1>
 
 						<div className="mt-6 flex items-center gap-3">
-							{post.user?.avatarUrl ? (
+							{authorAvatar ? (
 								<img
-									src={post.user.avatarUrl}
-									alt={post.user.name}
+									src={authorAvatar}
+									alt={post.user?.name ?? ""}
 									className="h-10 w-10 rounded-full object-cover"
 								/>
 							) : (
@@ -153,12 +156,13 @@ export default function BlogPostPage() {
 									{(post.user?.name ?? "?")[0].toUpperCase()}
 								</div>
 							)}
-							<div>
-								<p className="text-sm font-semibold text-gray-800">
+							<div className="min-w-0 flex-1">
+								<p className="truncate text-sm font-semibold text-gray-800">
 									By {post.user?.name ?? username}
 								</p>
 								<p className="text-xs text-gray-400">{formatDate(date)}</p>
 							</div>
+							<FollowButton username={username} />
 						</div>
 
 						{post.excerpt && (
@@ -167,7 +171,10 @@ export default function BlogPostPage() {
 
 						<div className="mt-2 h-px bg-gray-100" />
 
-						<div className="post-content mt-8" dangerouslySetInnerHTML={{ __html: cleanHtml }} />
+						<div
+							className="post-content mt-8 min-w-0 wrap-break-word"
+							dangerouslySetInnerHTML={{ __html: cleanHtml }}
+						/>
 					</article>
 
 					{/* Sidebar */}
@@ -260,6 +267,8 @@ export default function BlogPostPage() {
 					</aside>
 				</div>
 			</div>
+
+			<SiteFooter />
 
 			<Suspense fallback={null}>
 				<AIChatWidget />

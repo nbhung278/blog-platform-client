@@ -1,5 +1,6 @@
 import { useSearch } from "@tanstack/react-router";
 import SiteHeader from "@/components/layout/SiteHeader";
+import SiteFooter from "@/components/layout/SiteFooter";
 import FeaturedCard from "@/components/blog/FeaturedCard";
 import { useSearchPosts } from "@/hooks/usePosts";
 
@@ -10,7 +11,7 @@ export default function SearchPage() {
 	const results = data?.items ?? [];
 
 	return (
-		<div className="min-h-screen bg-white font-sans">
+		<div className="flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader />
 
 			{/* Banner */}
@@ -41,6 +42,8 @@ export default function SearchPage() {
 					</div>
 				)}
 			</main>
+
+			<SiteFooter />
 		</div>
 	);
 }

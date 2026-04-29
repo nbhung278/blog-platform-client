@@ -1,5 +1,6 @@
 import { useParams } from "@tanstack/react-router";
 import SiteHeader from "@/components/layout/SiteHeader";
+import SiteFooter from "@/components/layout/SiteFooter";
 import FeaturedCard from "@/components/blog/FeaturedCard";
 import { usePostsByCategory } from "@/hooks/usePosts";
 
@@ -9,7 +10,7 @@ export default function CategoryPage() {
 	const results = data?.items ?? [];
 
 	return (
-		<div className="min-h-screen bg-white font-sans">
+		<div className="flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader />
 
 			<div className="bg-brand-hero px-6 py-16 text-center">
@@ -30,6 +31,8 @@ export default function CategoryPage() {
 					</div>
 				)}
 			</main>
+
+			<SiteFooter />
 		</div>
 	);
 }

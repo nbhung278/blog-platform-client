@@ -1,7 +1,10 @@
 import { type ReactNode, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth.store";
+import { useLogout } from "@/hooks/useAuth";
 import { useCategories } from "@/hooks/usePosts";
+import UserMenu from "./UserMenu";
+import NotificationBell from "./NotificationBell";
 
 interface SiteHeaderProps {
 	navContent?: ReactNode;
@@ -164,6 +167,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 	const navigate = useNavigate();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const { data: categories = [] } = useCategories();
+	const logout = useLogout();
 
 	function handleSearch(q: string) {
 		setMobileOpen(false);
@@ -172,7 +176,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 
 	return (
 		<header className="bg-brand-cream border-brand-border sticky top-0 z-50 border-b">
-			<div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-5">
+			<div className="mx-auto flex max-w-7xl items-end justify-between gap-6 px-6 py-5">
 				<Link to="/" className="flex shrink-0 items-end gap-2.5">
 					<div className="bg-brand flex h-9 items-center justify-center px-2.5">
 						<span className="font-serif text-lg font-bold tracking-wide text-white">
@@ -184,30 +188,17 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 
 				{navContent ?? (
 					<>
-						{user && (
-							<nav className="hidden items-center gap-6 md:flex">
-								<Link
-									to="/dashboard"
-									className="text-brand-mid hover:text-brand-dark text-sm transition-colors"
-								>
-									Dashboard
-								</Link>
-								<Link
-									to="/blog/$username"
-									params={{ username: user.username }}
-									className="text-brand-mid hover:text-brand-dark text-sm transition-colors"
-								>
-									My blog
-								</Link>
-							</nav>
-						)}
-
 						<div className="flex-1" />
 
 						<div className="hidden items-center gap-3 md:flex">
 							<CategoriesDropdown categories={categories} />
 							<SearchBar onSubmit={handleSearch} />
-							{!user && (
+							{user ? (
+								<div className="flex items-center gap-2">
+									<NotificationBell />
+									<UserMenu user={user} />
+								</div>
+							) : (
 								<Link
 									to="/login"
 									className="text-brand-mid hover:text-brand-dark transition-colors"
@@ -254,20 +245,30 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 					{user ? (
 						<>
 							<Link
-								to="/dashboard"
-								className="text-brand-mid text-sm"
-								onClick={() => setMobileOpen(false)}
-							>
-								Dashboard
-							</Link>
-							<Link
 								to="/blog/$username"
 								params={{ username: user.username }}
 								className="text-brand-mid text-sm"
 								onClick={() => setMobileOpen(false)}
 							>
-								My blog
+								Profile
 							</Link>
+							<Link
+								to="/editor/new"
+								className="text-brand-mid text-sm"
+								onClick={() => setMobileOpen(false)}
+							>
+								Write a post
+							</Link>
+							<button
+								onClick={async () => {
+									setMobileOpen(false);
+									await logout.mutateAsync();
+									navigate({ to: "/" });
+								}}
+								className="text-brand-mid text-left text-sm"
+							>
+								Logout
+							</button>
 						</>
 					) : (
 						<Link

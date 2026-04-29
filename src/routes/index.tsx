@@ -5,12 +5,12 @@ import App from "@/App";
 const HomePage = lazy(() => import("./home"));
 const LoginPage = lazy(() => import("./login"));
 const RegisterPage = lazy(() => import("./register"));
-const DashboardPage = lazy(() => import("./dashboard"));
 const EditorPage = lazy(() => import("./editor"));
 const BlogUserPage = lazy(() => import("./blog.$username"));
 const BlogPostPage = lazy(() => import("./blog.$username.$slug"));
 const SearchPage = lazy(() => import("./search"));
 const CategoryPage = lazy(() => import("./category.$name"));
+const NotificationsPage = lazy(() => import("./notifications"));
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -32,12 +32,6 @@ const registerRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/register",
 	component: RegisterPage,
-});
-
-const dashboardRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/dashboard",
-	component: DashboardPage,
 });
 
 const editorRoute = createRoute({
@@ -79,15 +73,21 @@ const categoryRoute = createRoute({
 	component: CategoryPage,
 });
 
+const notificationsRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/notifications",
+	component: NotificationsPage,
+});
+
 export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
 	registerRoute,
-	dashboardRoute,
 	newPostRoute,
 	editorRoute,
 	blogUserRoute,
 	blogPostRoute,
 	searchRoute,
 	categoryRoute,
+	notificationsRoute,
 ]);
