@@ -8,6 +8,9 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import SidebarRecentCard from "@/components/blog/SidebarRecentCard";
 import FollowButton from "@/components/blog/FollowButton";
+import PostActionBar from "@/components/blog/PostActionBar";
+import CommentDrawer from "@/components/blog/CommentDrawer";
+import { useComments } from "@/hooks/useComments";
 
 const AIChatWidget = lazy(() => import("@/components/chat/AIChatWidget"));
 
@@ -59,6 +62,19 @@ export default function BlogPostPage() {
 	const { data: feedData } = useFeed(6);
 	const [email, setEmail] = useState("");
 	const [subscribed, setSubscribed] = useState(false);
+	const [drawerOpen, setDrawerOpen] = useState(false);
+
+	// Prefetch comment count alongside the post so the action bar shows the
+	// real number before the drawer is opened. The drawer reuses this query.
+	const { data: commentsData } = useComments(post?.id);
+
+	// If the URL has #comment-X (notification deep link), open the drawer so
+	// the highlight scroll inside it can find its target.
+	useEffect(() => {
+		if (window.location.hash.startsWith("#comment-")) {
+			setDrawerOpen(true);
+		}
+	}, []);
 
 	const cleanHtml = useMemo(() => sanitizeHtml(post?.contentHtml ?? ""), [post?.contentHtml]);
 
@@ -165,11 +181,17 @@ export default function BlogPostPage() {
 							<FollowButton username={username} />
 						</div>
 
+						<div className="mt-6">
+							<PostActionBar
+								postId={post.id}
+								commentCount={commentsData?.total ?? 0}
+								onOpenComments={() => setDrawerOpen(true)}
+							/>
+						</div>
+
 						{post.excerpt && (
 							<p className="mt-6 text-lg leading-relaxed text-gray-500">{post.excerpt}</p>
 						)}
-
-						<div className="mt-2 h-px bg-gray-100" />
 
 						<div
 							className="post-content mt-8 min-w-0 wrap-break-word"
@@ -273,6 +295,8 @@ export default function BlogPostPage() {
 			<Suspense fallback={null}>
 				<AIChatWidget />
 			</Suspense>
+
+			<CommentDrawer postId={post.id} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 		</div>
 	);
 }

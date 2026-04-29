@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Bookmark } from "lucide-react";
 import { useLogout } from "@/hooks/useAuth";
 
 interface UserMenuProps {
@@ -123,6 +124,10 @@ export default function UserMenu({ user }: UserMenuProps) {
 						>
 							<ProfileIcon />
 							Profile
+						</Link>
+						<Link to="/saved" onClick={() => setOpen(false)} role="menuitem" className={itemClass}>
+							<Bookmark className="h-4 w-4" />
+							Saved posts
 						</Link>
 						<Link
 							to="/editor/new"

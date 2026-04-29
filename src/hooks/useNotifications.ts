@@ -1,11 +1,14 @@
 import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
 
+export type NotificationType = "follow" | "post_published" | "post_updated" | "comment_reply";
+
 export interface NotificationItem {
 	id: string;
-	type: "follow" | "post_published" | "post_updated";
+	type: NotificationType;
 	isRead: boolean;
 	createdAt: string;
+	commentId: string | null;
 	actor: { id: string; name: string; username: string; avatarUrl: string | null } | null;
 	post: {
 		id: string;

@@ -97,6 +97,40 @@
 	--color-brand-surface: #faf8f4;
 }
 
+/* Floating "+N" digit that rises out of the clap button on each click.
+   Duration matches the timeout in ClapButton.tsx so the element is removed
+   exactly as the animation ends. */
+.clap-float {
+	animation: clap-float 0.8s ease-out forwards;
+}
+@keyframes clap-float {
+	0% {
+		opacity: 0;
+		transform: translate(-50%, 0) scale(0.8);
+	}
+	30% {
+		opacity: 1;
+		transform: translate(-50%, -8px) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50%, -32px) scale(1);
+	}
+}
+
+/* Brief highlight when a comment is reached via deep link (notification click). */
+.comment-flash {
+	animation: comment-flash 1.6s ease-out;
+}
+@keyframes comment-flash {
+	0% {
+		background-color: rgba(252, 211, 77, 0.3);
+	}
+	100% {
+		background-color: transparent;
+	}
+}
+
 /* Rendered post content (Tiptap HTML output). Mirror the admin editor styling
    so authors see the same result on the public blog. */
 .post-content {

@@ -11,6 +11,7 @@ const BlogPostPage = lazy(() => import("./blog.$username.$slug"));
 const SearchPage = lazy(() => import("./search"));
 const CategoryPage = lazy(() => import("./category.$name"));
 const NotificationsPage = lazy(() => import("./notifications"));
+const SavedPage = lazy(() => import("./saved"));
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -79,6 +80,12 @@ const notificationsRoute = createRoute({
 	component: NotificationsPage,
 });
 
+const savedRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/saved",
+	component: SavedPage,
+});
+
 export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
@@ -90,4 +97,5 @@ export const routeTree = rootRoute.addChildren([
 	searchRoute,
 	categoryRoute,
 	notificationsRoute,
+	savedRoute,
 ]);

@@ -8,6 +8,7 @@ import {
 	type NotificationItem,
 } from "@/hooks/useNotifications";
 import { safeImageUrl } from "@/lib/sanitize";
+import { describeNotification } from "@/lib/notificationDescribe";
 
 export default function NotificationBell() {
 	const [open, setOpen] = useState(false);
@@ -36,6 +37,9 @@ export default function NotificationBell() {
 			navigate({
 				to: "/blog/$username/$slug",
 				params: { username: n.post.user.username, slug: n.post.slug },
+				// Anchor to the comment when the notification is comment-related so
+				// the user lands at the right place in the thread.
+				hash: n.commentId ? `comment-${n.commentId}` : undefined,
 			});
 		}
 	};
@@ -77,7 +81,7 @@ export default function NotificationBell() {
 							>
 								<Avatar item={n} />
 								<div className="min-w-0 flex-1">
-									<p className="text-brand-dark text-sm leading-snug">{describe(n)}</p>
+									<p className="text-brand-dark text-sm leading-snug">{describeNotification(n)}</p>
 									<p className="text-brand-mid mt-0.5 text-xs">{formatRelative(n.createdAt)}</p>
 								</div>
 								{!n.isRead && <span className="bg-brand mt-1.5 h-2 w-2 shrink-0 rounded-full" />}
@@ -116,32 +120,6 @@ function Avatar({ item }: { item: NotificationItem }) {
 			{initial}
 		</div>
 	);
-}
-
-function describe(n: NotificationItem): React.ReactNode {
-	const name = n.actor?.name ?? "Someone";
-	if (n.type === "follow") {
-		return (
-			<>
-				<strong>{name}</strong> started following you
-			</>
-		);
-	}
-	if (n.type === "post_published") {
-		return (
-			<>
-				<strong>{name}</strong> published <em>{n.post?.title ?? "a new post"}</em>
-			</>
-		);
-	}
-	if (n.type === "post_updated") {
-		return (
-			<>
-				<strong>{name}</strong> updated <em>{n.post?.title ?? "a post"}</em>
-			</>
-		);
-	}
-	return name;
 }
 
 function formatRelative(iso: string) {

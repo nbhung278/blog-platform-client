@@ -10,6 +10,7 @@ import {
 	type NotificationItem,
 } from "@/hooks/useNotifications";
 import { safeImageUrl } from "@/lib/sanitize";
+import { describeNotification } from "@/lib/notificationDescribe";
 
 export default function NotificationsPage() {
 	return (
@@ -36,6 +37,7 @@ function NotificationsScreen() {
 			navigate({
 				to: "/blog/$username/$slug",
 				params: { username: n.post.user.username, slug: n.post.slug },
+				hash: n.commentId ? `comment-${n.commentId}` : undefined,
 			});
 		}
 	};
@@ -75,7 +77,7 @@ function NotificationsScreen() {
 						>
 							<Avatar item={n} />
 							<div className="min-w-0 flex-1">
-								<p className="text-brand-dark text-sm leading-snug">{describe(n)}</p>
+								<p className="text-brand-dark text-sm leading-snug">{describeNotification(n)}</p>
 								<p className="text-brand-mid mt-0.5 text-xs">{formatRelative(n.createdAt)}</p>
 							</div>
 							{!n.isRead && <span className="bg-brand mt-1.5 h-2 w-2 shrink-0 rounded-full" />}
@@ -119,32 +121,6 @@ function Avatar({ item }: { item: NotificationItem }) {
 			{initial}
 		</div>
 	);
-}
-
-function describe(n: NotificationItem): React.ReactNode {
-	const name = n.actor?.name ?? "Someone";
-	if (n.type === "follow") {
-		return (
-			<>
-				<strong>{name}</strong> started following you
-			</>
-		);
-	}
-	if (n.type === "post_published") {
-		return (
-			<>
-				<strong>{name}</strong> published <em>{n.post?.title ?? "a new post"}</em>
-			</>
-		);
-	}
-	if (n.type === "post_updated") {
-		return (
-			<>
-				<strong>{name}</strong> updated <em>{n.post?.title ?? "a post"}</em>
-			</>
-		);
-	}
-	return name;
 }
 
 function formatRelative(iso: string) {
