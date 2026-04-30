@@ -1,9 +1,8 @@
-import { lazy, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { usePost, useFeed } from "@/hooks/usePosts";
 import { sanitizeHtml, safeImageUrl } from "@/lib/sanitize";
 
-import { Suspense } from "react";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import SidebarRecentCard from "@/components/blog/SidebarRecentCard";
@@ -11,8 +10,6 @@ import FollowButton from "@/components/blog/FollowButton";
 import PostActionBar from "@/components/blog/PostActionBar";
 import CommentDrawer from "@/components/blog/CommentDrawer";
 import { useComments } from "@/hooks/useComments";
-
-const AIChatWidget = lazy(() => import("@/components/chat/AIChatWidget"));
 
 function formatDate(iso: string) {
 	return new Date(iso).toLocaleDateString("en-US", {
@@ -67,6 +64,7 @@ export default function BlogPostPage() {
 	// Prefetch comment count alongside the post so the action bar shows the
 	// real number before the drawer is opened. The drawer reuses this query.
 	const { data: commentsData } = useComments(post?.id);
+	const commentTotal = commentsData?.pages[0]?.total ?? 0;
 
 	// If the URL has #comment-X (notification deep link), open the drawer so
 	// the highlight scroll inside it can find its target.
@@ -168,7 +166,7 @@ export default function BlogPostPage() {
 									className="h-10 w-10 rounded-full object-cover"
 								/>
 							) : (
-								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-semibold text-gray-500">
+								<div className="bg-brand-hero text-brand-dark flex h-10 w-10 items-center justify-center rounded-full font-semibold">
 									{(post.user?.name ?? "?")[0].toUpperCase()}
 								</div>
 							)}
@@ -184,7 +182,7 @@ export default function BlogPostPage() {
 						<div className="mt-6">
 							<PostActionBar
 								postId={post.id}
-								commentCount={commentsData?.total ?? 0}
+								commentCount={commentTotal}
 								onOpenComments={() => setDrawerOpen(true)}
 							/>
 						</div>
@@ -291,10 +289,6 @@ export default function BlogPostPage() {
 			</div>
 
 			<SiteFooter />
-
-			<Suspense fallback={null}>
-				<AIChatWidget />
-			</Suspense>
 
 			<CommentDrawer postId={post.id} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 		</div>

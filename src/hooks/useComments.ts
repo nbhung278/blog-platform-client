@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+	type InfiniteData,
+} from "@tanstack/react-query";
 import { api } from "@/api/client";
 import { CSRF_COOKIE_NAME, CSRF_HEADER, APP_HEADER, APP_KIND_WEB } from "@/lib/authConstants";
 import type { ClapState } from "@/hooks/useClap";
@@ -42,19 +47,32 @@ export type CommentSort = "new" | "top";
 export const commentsKey = (postId: string, sort: CommentSort) =>
 	["comments", postId, sort] as const;
 
+const PAGE_LIMIT = 10;
+
 export function useComments(postId: string | undefined, sort: CommentSort = "new") {
-	return useQuery({
+	return useInfiniteQuery({
 		queryKey: commentsKey(postId ?? "", sort),
-		queryFn: async () => {
-			const res = await api.get<CommentsPage>(`/comments/posts/${postId}?sort=${sort}`);
+		queryFn: async ({ pageParam }: { pageParam: string | null }) => {
+			const params = new URLSearchParams({ sort, limit: String(PAGE_LIMIT) });
+			if (pageParam) params.set("cursor", pageParam);
+			const res = await api.get<CommentsPage>(`/comments/posts/${postId}?${params}`);
 			return res.data;
 		},
+		initialPageParam: null as string | null,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 		enabled: !!postId,
 		staleTime: 30_000,
-		// Comments are not realtime-broadcast — refetch when the user comes back to
-		// the tab so they see new comments without us holding a WS room per post.
 		refetchOnWindowFocus: true,
 	});
+}
+
+// Helper: apply an updater to every page in the infinite cache.
+function mapPages(
+	prev: InfiniteData<CommentsPage> | undefined,
+	fn: (page: CommentsPage) => CommentsPage,
+): InfiniteData<CommentsPage> | undefined {
+	if (!prev) return prev;
+	return { ...prev, pages: prev.pages.map(fn) };
 }
 
 interface CreateInput {
@@ -70,21 +88,30 @@ export function useCreateComment(postId: string, sort: CommentSort = "new") {
 			return res.data;
 		},
 		onSuccess: (created) => {
-			qc.setQueryData<CommentsPage>(commentsKey(postId, sort), (prev) => {
+			qc.setQueryData<InfiniteData<CommentsPage>>(commentsKey(postId, sort), (prev) => {
 				if (!prev) return prev;
 				if (created.parentId) {
-					return {
-						...prev,
-						total: prev.total + 1,
-						items: prev.items.map((t) =>
+					// Append reply to parent thread (may be on any page).
+					return mapPages(prev, (page) => ({
+						...page,
+						total: page.total + 1,
+						items: page.items.map((t) =>
 							t.id === created.parentId ? { ...t, replies: [...t.replies, created] } : t,
 						),
-					};
+					}));
 				}
+				// Prepend new top-level comment to first page.
+				const [first, ...rest] = prev.pages;
 				return {
 					...prev,
-					total: prev.total + 1,
-					items: [{ ...created, replies: [] }, ...prev.items],
+					pages: [
+						{
+							...first,
+							total: first.total + 1,
+							items: [{ ...created, replies: [] }, ...first.items],
+						},
+						...rest,
+					],
 				};
 			});
 		},
@@ -101,11 +128,10 @@ export function useUpdateComment(postId: string, sort: CommentSort = "new") {
 			return res.data;
 		},
 		onSuccess: (updated) => {
-			qc.setQueryData<CommentsPage>(commentsKey(postId, sort), (prev) => {
-				if (!prev) return prev;
-				return {
-					...prev,
-					items: prev.items.map((t) => {
+			qc.setQueryData<InfiniteData<CommentsPage>>(commentsKey(postId, sort), (prev) =>
+				mapPages(prev, (page) => ({
+					...page,
+					items: page.items.map((t) => {
 						if (t.id === updated.id)
 							return { ...t, content: updated.content, updatedAt: updated.updatedAt };
 						if (t.replies.some((r) => r.id === updated.id)) {
@@ -120,8 +146,8 @@ export function useUpdateComment(postId: string, sort: CommentSort = "new") {
 						}
 						return t;
 					}),
-				};
-			});
+				})),
+			);
 		},
 	});
 }
@@ -134,12 +160,11 @@ export function useDeleteComment(postId: string, sort: CommentSort = "new") {
 			return id;
 		},
 		onSuccess: (id) => {
-			qc.setQueryData<CommentsPage>(commentsKey(postId, sort), (prev) => {
-				if (!prev) return prev;
-				return {
-					...prev,
-					total: Math.max(0, prev.total - 1),
-					items: prev.items.map((t) => {
+			qc.setQueryData<InfiniteData<CommentsPage>>(commentsKey(postId, sort), (prev) =>
+				mapPages(prev, (page) => ({
+					...page,
+					total: Math.max(0, page.total - 1),
+					items: page.items.map((t) => {
 						if (t.id === id) return { ...t, content: "", isDeleted: true };
 						if (t.replies.some((r) => r.id === id)) {
 							return {
@@ -151,8 +176,8 @@ export function useDeleteComment(postId: string, sort: CommentSort = "new") {
 						}
 						return t;
 					}),
-				};
-			});
+				})),
+			);
 		},
 	});
 }
@@ -164,16 +189,10 @@ function readCsrfCookie(): string | null {
 	return row ? decodeURIComponent(row.slice(CSRF_COOKIE_NAME.length + 1)) : null;
 }
 
-// Comment claps share the post-comment cache so we don't need a separate
-// query per comment. The hook batches clicks per comment id and flushes the
-// delta. Optimistic patches mutate the cached page; the server response
-// reconciles `clapCount`/`myClaps` on the right comment by id.
 export function useCommentClap(postId: string, sort: CommentSort = "new") {
 	const qc = useQueryClient();
 	const queryKey = commentsKey(postId, sort);
 
-	// One pending counter per comment id. We can't reuse the post hook's refs
-	// because the user may clap many comments concurrently in the drawer.
 	const pendingMap = useRef(new Map<string, number>());
 	const timerMap = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 	const inFlightMap = useRef(new Set<string>());
@@ -191,15 +210,16 @@ export function useCommentClap(postId: string, sort: CommentSort = "new") {
 			inFlightMap.current.add(id);
 			try {
 				const res = await api.post<ClapState>(`/claps/comments/${id}`, { count: delta });
-				qc.setQueryData<CommentsPage>(queryKey, (prev) => {
-					if (!prev) return prev;
-					const apply = (c: CommentItem): CommentItem =>
-						c.id === id ? { ...c, clapCount: res.data.total, myClaps: res.data.myCount } : c;
-					return {
-						...prev,
-						items: prev.items.map((t) => ({ ...apply(t), replies: t.replies.map(apply) })),
-					};
-				});
+				qc.setQueryData<InfiniteData<CommentsPage>>(queryKey, (prev) =>
+					mapPages(prev, (page) => {
+						const apply = (c: CommentItem): CommentItem =>
+							c.id === id ? { ...c, clapCount: res.data.total, myClaps: res.data.myCount } : c;
+						return {
+							...page,
+							items: page.items.map((t) => ({ ...apply(t), replies: t.replies.map(apply) })),
+						};
+					}),
+				);
 			} catch {
 				qc.invalidateQueries({ queryKey });
 			} finally {
@@ -220,37 +240,38 @@ export function useCommentClap(postId: string, sort: CommentSort = "new") {
 
 	const clap = useCallback(
 		(id: string) => {
-			const page = qc.getQueryData<CommentsPage>(queryKey);
-			if (!page) return;
+			const data = qc.getQueryData<InfiniteData<CommentsPage>>(queryKey);
+			if (!data) return;
 
 			const find = (): CommentItem | null => {
-				for (const t of page.items) {
-					if (t.id === id) return t;
-					const reply = t.replies.find((r) => r.id === id);
-					if (reply) return reply;
+				for (const page of data.pages) {
+					for (const t of page.items) {
+						if (t.id === id) return t;
+						const reply = t.replies.find((r) => r.id === id);
+						if (reply) return reply;
+					}
 				}
 				return null;
 			};
 			const current = find();
 			if (!current) return;
-			// Cap mirror — server enforces 50 too, but stop counting locally so the
-			// UI doesn't keep ticking after the cap.
 			const MAX = 50;
 			if (current.myClaps >= MAX) return;
 
 			pendingMap.current.set(id, (pendingMap.current.get(id) ?? 0) + 1);
 
-			qc.setQueryData<CommentsPage>(queryKey, (prev) => {
-				if (!prev) return prev;
-				const apply = (c: CommentItem): CommentItem =>
-					c.id === id
-						? { ...c, clapCount: c.clapCount + 1, myClaps: Math.min(MAX, c.myClaps + 1) }
-						: c;
-				return {
-					...prev,
-					items: prev.items.map((t) => ({ ...apply(t), replies: t.replies.map(apply) })),
-				};
-			});
+			qc.setQueryData<InfiniteData<CommentsPage>>(queryKey, (prev) =>
+				mapPages(prev, (page) => {
+					const apply = (c: CommentItem): CommentItem =>
+						c.id === id
+							? { ...c, clapCount: c.clapCount + 1, myClaps: Math.min(MAX, c.myClaps + 1) }
+							: c;
+					return {
+						...page,
+						items: page.items.map((t) => ({ ...apply(t), replies: t.replies.map(apply) })),
+					};
+				}),
+			);
 
 			const prev = timerMap.current.get(id);
 			if (prev) clearTimeout(prev);
@@ -264,11 +285,7 @@ export function useCommentClap(postId: string, sort: CommentSort = "new") {
 		[qc, queryKey, flush],
 	);
 
-	// Page-hide flush for any pending comment claps. Same beacon strategy as
-	// the post hook — fetch with keepalive so cookies/CSRF are attached.
 	useEffect(() => {
-		// Snapshot the refs so the cleanup function below uses the same
-		// instances we registered the listeners with — React Hooks rule.
 		const pending = pendingMap.current;
 		const onHide = () => {
 			const csrf = readCsrfCookie();
@@ -290,8 +307,7 @@ export function useCommentClap(postId: string, sort: CommentSort = "new") {
 						body,
 					});
 				} catch {
-					// Best-effort — there's nothing more to do if the browser is
-					// already tearing the page down.
+					// best-effort
 				}
 			}
 		};
@@ -305,7 +321,6 @@ export function useCommentClap(postId: string, sort: CommentSort = "new") {
 		return () => {
 			window.removeEventListener("pagehide", onHide);
 			document.removeEventListener("visibilitychange", onVisibility);
-			// Flush every pending counter on unmount (route change).
 			const ids = Array.from(pending.keys());
 			for (const id of ids) void flush(id);
 		};

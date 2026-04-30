@@ -70,13 +70,7 @@ export interface Category {
 }
 
 export interface AuthResponse {
-	user: Pick<User, "id" | "email" | "name" | "username">;
-}
-
-export interface ChatMessage {
-	id: string;
-	role: "user" | "assistant";
-	content: string;
+	user: Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl">;
 }
 
 export interface AnalyticsStat {

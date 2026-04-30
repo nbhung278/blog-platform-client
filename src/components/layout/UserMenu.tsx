@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Bookmark } from "lucide-react";
 import { useLogout } from "@/hooks/useAuth";
+import { safeImageUrl } from "@/lib/sanitize";
 
 interface UserMenuProps {
-	user: { name: string; username: string };
+	user: { name: string; username: string; avatarUrl?: string | null };
 }
 
 function UserIcon() {
@@ -26,6 +27,18 @@ function ProfileIcon() {
 				strokeLinecap="round"
 				strokeLinejoin="round"
 				d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+			/>
+		</svg>
+	);
+}
+
+function EditIcon() {
+	return (
+		<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"
 			/>
 		</svg>
 	);
@@ -91,6 +104,8 @@ export default function UserMenu({ user }: UserMenuProps) {
 	const itemClass =
 		"text-brand-dark hover:bg-brand-hero flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors";
 
+	const avatarUrl = safeImageUrl(user.avatarUrl);
+
 	return (
 		<div ref={ref} className="relative">
 			<button
@@ -98,10 +113,19 @@ export default function UserMenu({ user }: UserMenuProps) {
 				aria-label="Open user menu"
 				aria-expanded={open}
 				aria-haspopup="menu"
-				className="bg-brand-hero text-brand-dark hover:bg-brand-border flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition-colors"
+				className="border-brand-border hover:border-brand flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border transition-colors"
 			>
 				<span className="sr-only">{user.name}</span>
-				<span aria-hidden="true">{getInitials(user.name)}</span>
+				{avatarUrl ? (
+					<img src={avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+				) : (
+					<span
+						aria-hidden="true"
+						className="bg-brand-hero text-brand-dark flex h-full w-full items-center justify-center text-sm font-medium"
+					>
+						{getInitials(user.name)}
+					</span>
+				)}
 			</button>
 
 			{open && (
@@ -124,6 +148,15 @@ export default function UserMenu({ user }: UserMenuProps) {
 						>
 							<ProfileIcon />
 							Profile
+						</Link>
+						<Link
+							to="/settings/profile"
+							onClick={() => setOpen(false)}
+							role="menuitem"
+							className={itemClass}
+						>
+							<EditIcon />
+							Edit profile
 						</Link>
 						<Link to="/saved" onClick={() => setOpen(false)} role="menuitem" className={itemClass}>
 							<Bookmark className="h-4 w-4" />

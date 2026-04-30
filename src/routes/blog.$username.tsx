@@ -15,8 +15,15 @@ export default function BlogUserPage() {
 	const me = useAuthStore((s) => s.user);
 	const isOwner = !!me && me.username === username;
 
+	// For the owner we use the auth store (always up to date after edits).
+	// For visitors we fall back to the post author field or fetch a public profile.
+	const ownerProfile = isOwner ? me : null;
 	const author = posts?.[0]?.user;
-	const initial = (author?.name ?? username).charAt(0).toUpperCase();
+
+	const displayName = ownerProfile?.name ?? author?.name ?? `@${username}`;
+	const displayBio = ownerProfile?.bio ?? null;
+	const displayAvatar = safeImageUrl(ownerProfile?.avatarUrl ?? author?.avatarUrl);
+	const initial = displayName.charAt(0).toUpperCase();
 
 	const published = posts?.filter((p) => p.status === "published") ?? [];
 	const pending = posts?.filter((p) => p.status === "pending") ?? [];
@@ -24,7 +31,6 @@ export default function BlogUserPage() {
 	const rejected = posts?.filter((p) => p.status === "rejected") ?? [];
 
 	const { data: stats } = useFollowStats(username);
-	const authorAvatar = safeImageUrl(author?.avatarUrl);
 
 	return (
 		<div className="bg-brand-surface flex min-h-screen flex-col font-sans">
@@ -39,9 +45,7 @@ export default function BlogUserPage() {
 			<div className="bg-brand-hero border-brand-border border-b">
 				<div className="mx-auto max-w-7xl px-6 py-10">
 					<p className="text-brand-mid font-serif text-sm tracking-widest uppercase">Author</p>
-					<h1 className="text-brand-dark mt-1 font-serif text-4xl font-bold">
-						{author?.name ?? `@${username}`}
-					</h1>
+					<h1 className="text-brand-dark mt-1 font-serif text-4xl font-bold">{displayName}</h1>
 				</div>
 			</div>
 
@@ -50,10 +54,10 @@ export default function BlogUserPage() {
 					<aside className="lg:sticky lg:top-28 lg:self-start">
 						<div className="bg-brand-surface border-brand-border border p-6">
 							<div className="flex justify-center">
-								{authorAvatar ? (
+								{displayAvatar ? (
 									<img
-										src={authorAvatar}
-										alt={author?.name ?? ""}
+										src={displayAvatar}
+										alt={displayName}
 										className="border-brand-border h-24 w-24 rounded-full border-2 object-cover"
 									/>
 								) : (
@@ -64,11 +68,15 @@ export default function BlogUserPage() {
 							</div>
 
 							<div className="mt-4 text-center">
-								<p className="text-brand-dark font-serif text-xl font-bold">
-									{author?.name ?? `@${username}`}
-								</p>
+								<p className="text-brand-dark font-serif text-xl font-bold">{displayName}</p>
 								<p className="text-brand-mid mt-0.5 text-sm">@{username}</p>
 							</div>
+
+							{displayBio && (
+								<p className="text-brand-mid mt-3 text-center text-sm leading-relaxed">
+									{displayBio}
+								</p>
+							)}
 
 							<div className="border-brand-border my-5 border-t" />
 
@@ -89,12 +97,20 @@ export default function BlogUserPage() {
 							<div className="border-brand-border my-5 border-t" />
 
 							{isOwner ? (
-								<Link
-									to="/editor/new"
-									className="bg-brand-dark hover:bg-brand-mid block w-full py-2 text-center text-sm text-white transition-colors"
-								>
-									+ New post
-								</Link>
+								<div className="space-y-2">
+									<Link
+										to="/editor/new"
+										className="bg-brand-dark hover:bg-brand-mid block w-full py-2 text-center text-sm text-white transition-colors"
+									>
+										+ New post
+									</Link>
+									<Link
+										to="/settings/profile"
+										className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark block w-full border py-2 text-center text-sm transition-colors"
+									>
+										Edit profile
+									</Link>
+								</div>
 							) : (
 								<Link
 									to="/"

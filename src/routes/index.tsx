@@ -12,6 +12,7 @@ const SearchPage = lazy(() => import("./search"));
 const CategoryPage = lazy(() => import("./category.$name"));
 const NotificationsPage = lazy(() => import("./notifications"));
 const SavedPage = lazy(() => import("./saved"));
+const SettingsProfilePage = lazy(() => import("./settings.profile"));
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -86,6 +87,12 @@ const savedRoute = createRoute({
 	component: SavedPage,
 });
 
+const settingsProfileRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/settings/profile",
+	component: SettingsProfilePage,
+});
+
 export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
@@ -98,4 +105,5 @@ export const routeTree = rootRoute.addChildren([
 	categoryRoute,
 	notificationsRoute,
 	savedRoute,
+	settingsProfileRoute,
 ]);

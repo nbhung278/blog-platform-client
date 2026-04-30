@@ -3,7 +3,7 @@ import { AxiosError } from "axios";
 import { api, invalidateCsrfCache, registerOnAuthLost } from "@/api/client";
 import type { User } from "@/types";
 
-export type AuthUser = Pick<User, "id" | "email" | "name" | "username">;
+export type AuthUser = Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl">;
 
 interface AuthState {
 	user: AuthUser | null;

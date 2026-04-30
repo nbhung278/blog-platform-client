@@ -32,6 +32,10 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
 	config.headers[APP_HEADER] = APP_KIND_WEB;
+	// Let the browser set Content-Type (with boundary) for multipart uploads.
+	if (config.data instanceof FormData) {
+		delete config.headers["Content-Type"];
+	}
 	if (UNSAFE_METHODS.has(config.method?.toLowerCase() ?? "")) {
 		const csrf = getCsrf();
 		if (csrf) {
@@ -110,50 +114,3 @@ api.interceptors.response.use(
 		return Promise.reject(err);
 	},
 );
-
-export async function* streamChat(
-	message: string,
-	sessionId?: string,
-): AsyncGenerator<{ type: "token" | "session_id"; data: string }> {
-	const csrf = getCsrf();
-	const response = await fetch(`${API_URL}/ai/chat`, {
-		method: "POST",
-		credentials: "include",
-		headers: {
-			"Content-Type": "application/json",
-			[APP_HEADER]: APP_KIND_WEB,
-			...(csrf ? { [CSRF_HEADER]: csrf } : {}),
-		},
-		body: JSON.stringify({ message, sessionId }),
-	});
-
-	if (!response.ok) {
-		throw new Error(`Chat request failed: ${response.status}`);
-	}
-
-	const reader = response.body?.getReader();
-	if (!reader) throw new Error("No response body");
-
-	const decoder = new TextDecoder();
-	let buffer = "";
-
-	while (true) {
-		const { done, value } = await reader.read();
-		if (done) break;
-
-		buffer += decoder.decode(value, { stream: true });
-		const lines = buffer.split("\n");
-		buffer = lines.pop() || "";
-
-		for (let i = 0; i < lines.length; i++) {
-			if (lines[i].startsWith("event: ")) {
-				const event = lines[i].slice(7).trim();
-				const nextLine = lines[i + 1];
-				if (nextLine?.startsWith("data: ")) {
-					const data = nextLine.slice(6);
-					yield { type: event as "token" | "session_id", data };
-				}
-			}
-		}
-	}
-}
