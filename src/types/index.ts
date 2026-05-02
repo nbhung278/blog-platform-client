@@ -77,3 +77,36 @@ export interface AnalyticsStat {
 	event: string;
 	count: number;
 }
+
+export interface ChatUser {
+	id: string;
+	name: string;
+	username: string;
+	avatarUrl: string | null;
+}
+
+export interface DirectMessage {
+	id: string;
+	conversationId: string;
+	senderId: string;
+	content: string | null;
+	imageUrl: string | null;
+	createdAt: string;
+	sender: ChatUser;
+}
+
+export interface Conversation {
+	id: string;
+	other: ChatUser | null;
+	lastMessage: Omit<DirectMessage, "sender"> | null;
+	unreadCount: number;
+	updatedAt: string;
+}
+
+export interface UserSearchResult {
+	id: string;
+	name: string;
+	username: string;
+	avatarUrl: string | null;
+	bio: string | null;
+}

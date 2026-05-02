@@ -12,7 +12,6 @@ import {
 	useDeleteComment,
 	useUpdateComment,
 } from "@/hooks/useComments";
-import { notify } from "@/lib/notify";
 import { safeImageUrl } from "@/lib/sanitize";
 import ClapButton from "./ClapButton";
 
@@ -273,7 +272,6 @@ function NewCommentForm({
 					setFocused(false);
 					onCancel?.();
 				},
-				onError: () => notify.error("Failed to post comment"),
 			},
 		);
 	};
@@ -431,7 +429,6 @@ function CommentRow({
 			{ id: comment.id, content: trimmed },
 			{
 				onSuccess: () => setEditing(false),
-				onError: () => notify.error("Failed to update comment"),
 			},
 		);
 	};
@@ -443,7 +440,7 @@ function CommentRow({
 
 	const confirmDoDelete = () => {
 		setConfirmDelete(false);
-		del.mutate(comment.id, { onError: () => notify.error("Failed to delete comment") });
+		del.mutate(comment.id);
 	};
 
 	return (

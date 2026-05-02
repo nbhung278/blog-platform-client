@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLogout } from "@/hooks/useAuth";
 import { useCategories } from "@/hooks/usePosts";
+import { useConversations } from "@/hooks/useChat";
 import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
 
@@ -37,6 +38,38 @@ function MenuIcon({ open }: { open: boolean }) {
 		<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 			<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
 		</svg>
+	);
+}
+
+function ChatIcon() {
+	const { data: conversations = [] } = useConversations();
+	const unread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+
+	return (
+		<Link
+			to="/chat"
+			className="text-brand-mid hover:text-brand-dark relative transition-colors"
+			aria-label="Messages"
+		>
+			<svg
+				className="h-5 w-5"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+				strokeWidth={2}
+			>
+				<path
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+				/>
+			</svg>
+			{unread > 0 && (
+				<span className="bg-brand absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white">
+					{unread > 9 ? "9+" : unread}
+				</span>
+			)}
+		</Link>
 	);
 }
 
@@ -195,6 +228,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 							<SearchBar onSubmit={handleSearch} />
 							{user ? (
 								<div className="flex items-center gap-2">
+									<ChatIcon />
 									<NotificationBell />
 									<UserMenu user={user} />
 								</div>
@@ -251,6 +285,13 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 								onClick={() => setMobileOpen(false)}
 							>
 								Profile
+							</Link>
+							<Link
+								to="/chat"
+								className="text-brand-mid text-sm"
+								onClick={() => setMobileOpen(false)}
+							>
+								Messages
 							</Link>
 							<Link
 								to="/editor/new"

@@ -10,7 +10,6 @@ import { htmlToMarkdown } from "@/lib/markdown";
 import { POST_STATUS_LABEL, POST_STATUS_PILL_CLASS } from "@/lib/postStatus";
 import { ALLOWED_IMAGE_TYPES } from "@/lib/constants";
 import { formatApiError, type ApiError } from "@/lib/apiErrors";
-import { notify } from "@/lib/notify";
 import type { PostStatus } from "@/types";
 
 const INPUT_CLASS =
@@ -69,8 +68,8 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 		try {
 			const { url } = await uploadsApi.uploadImage(file);
 			setCoverUrl(url);
-		} catch (err) {
-			notify.error(formatApiError(err, "Upload failed"));
+		} catch {
+			// upload failed silently, user can retry
 		} finally {
 			setUploadingCover(false);
 			if (fileInputRef.current) fileInputRef.current.value = "";
@@ -84,10 +83,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	const submitting = createPost.isPending || updatePost.isPending;
 
 	async function save(nextStatus: PostStatus) {
-		if (formInvalid) {
-			notify.error("Please fill in title, content, and pick at least one category.");
-			return;
-		}
+		if (formInvalid) return;
 		const payload = {
 			title: title.trim(),
 			contentHtml,
@@ -105,42 +101,17 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 		try {
 			if (mode === "new") {
 				const created = await createPost.mutateAsync(payload);
-				notify.success(
-					nextStatus === "pending"
-						? "Submitted for review — an admin will check it soon."
-						: "Draft saved.",
-				);
 				navigate({ to: "/blog/$username", params: { username: user.username } });
 				return created;
 			}
 			const updated = await updatePost.mutateAsync({ id: postId!, version, ...payload });
 			setVersion(updated.version);
 			setStatus(updated.status);
-			notify.success(
-				nextStatus === "pending"
-					? "Submitted for review."
-					: nextStatus === "draft"
-						? "Draft saved."
-						: "Saved.",
-			);
 		} catch (err) {
 			const apiErr = err as ApiError;
 			const code = apiErr.response?.status;
-			if (code === 409) {
-				notify.error("This post was edited elsewhere — reload to get the latest version.");
-				return;
-			}
-			if (code === 401) {
-				notify.error("Your session has expired — please sign in again.");
-				return;
-			}
-			if (code === 403) {
-				notify.error(
-					"Your account doesn't have permission to publish. Sign out and back in to refresh.",
-				);
-				return;
-			}
-			notify.error(formatApiError(apiErr));
+			if (code === 409 || code === 401 || code === 403) return;
+			console.error(formatApiError(apiErr));
 		}
 	}
 

@@ -4,7 +4,6 @@ import RequireAuth from "@/components/RequireAuth";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmark";
-import { notify } from "@/lib/notify";
 
 export default function SavedPage() {
 	return (
@@ -74,9 +73,7 @@ function SavedPostCard({ post }: { post: SavedPost }) {
 
 	const onUnsave = (e: React.MouseEvent) => {
 		e.preventDefault();
-		toggle.mutate(false, {
-			onSuccess: () => notify.success("Removed from saved"),
-		});
+		toggle.mutate(false);
 	};
 
 	return (

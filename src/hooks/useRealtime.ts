@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth.store";
 import type { NotificationItem } from "@/hooks/useNotifications";
+import type { Conversation, DirectMessage } from "@/types";
 
 const WS_URL =
 	import.meta.env.VITE_WS_URL ||
@@ -12,11 +13,14 @@ const WS_URL =
 type Message =
 	| { kind: "ready" }
 	| { kind: "notification"; data: NotificationItem }
-	| { kind: "unread_count"; count: number };
+	| { kind: "unread_count"; count: number }
+	| { kind: "chat_message"; data: DirectMessage & { conversationId: string } };
 
-// Single app-wide WebSocket. Auto-connects when the user is authenticated, and
-// reconnects with capped exponential backoff on drop. The cookie attaches
-// automatically since the WS endpoint is same-origin.
+type MessagesCache = {
+	pages: { items: DirectMessage[]; nextCursor: string | null }[];
+	pageParams: unknown[];
+};
+
 export function useRealtime() {
 	const userId = useAuthStore((s) => s.user?.id);
 	const initialized = useAuthStore((s) => s.initialized);
@@ -57,6 +61,36 @@ export function useRealtime() {
 					qc.invalidateQueries({ queryKey: ["notifications", "all"] });
 				} else if (msg.kind === "unread_count") {
 					qc.setQueryData(["notifications", "unread-count"], msg.count);
+				} else if (msg.kind === "chat_message") {
+					const { conversationId, ...message } = msg.data;
+					const isFromMe = message.senderId === userId;
+
+					// Own messages are already added by useSendMessage.onSuccess — skip cache write
+					// to avoid duplicates (WebSocket push arrives before the HTTP response resolves).
+					if (!isFromMe) {
+						qc.setQueryData(["messages", conversationId], (old: MessagesCache | undefined) => {
+							if (!old || old.pages.length === 0) return old;
+							const newestPage = old.pages[0];
+							if (newestPage.items.some((m) => m.id === message.id)) return old;
+							const pages = [...old.pages];
+							pages[0] = { ...newestPage, items: [...newestPage.items, message] };
+							return { ...old, pages };
+						});
+					}
+
+					// Always update the conversations sidebar (last message + unread count)
+					qc.setQueryData(["conversations"], (old: Conversation[] | undefined) => {
+						if (!old) return old;
+						return old.map((conv) => {
+							if (conv.id !== conversationId) return conv;
+							return {
+								...conv,
+								lastMessage: message,
+								unreadCount: isFromMe ? conv.unreadCount : conv.unreadCount + 1,
+								updatedAt: message.createdAt,
+							};
+						});
+					});
 				}
 			};
 

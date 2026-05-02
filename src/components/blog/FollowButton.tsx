@@ -3,7 +3,6 @@ import { Bell, BellOff, BellPlus, Check, ChevronDown } from "lucide-react";
 import { useFollow, useFollowState, useUnfollow, useUpdateFollow } from "@/hooks/useFollows";
 import { useAuthStore } from "@/stores/auth.store";
 import { useNavigate } from "@tanstack/react-router";
-import { notify } from "@/lib/notify";
 
 interface FollowButtonProps {
 	username: string;
@@ -97,9 +96,7 @@ export default function FollowButton({ username }: FollowButtonProps) {
 					/>
 					<button
 						onClick={() => {
-							unfollow.mutate(undefined, {
-								onSuccess: () => notify.success(`Unfollowed @${username}`),
-							});
+							unfollow.mutate(undefined);
 							setOpen(false);
 						}}
 						className="border-brand-border flex w-full items-center gap-2.5 border-t px-4 py-2.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
