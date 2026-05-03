@@ -85,6 +85,14 @@ export interface ChatUser {
 	avatarUrl: string | null;
 }
 
+export type ReactionEmoji = "love" | "like" | "haha" | "sad" | "angry";
+
+export interface MessageReaction {
+	emoji: ReactionEmoji;
+	count: number;
+	reactedByMe: boolean;
+}
+
 export interface DirectMessage {
 	id: string;
 	conversationId: string;
@@ -92,7 +100,10 @@ export interface DirectMessage {
 	content: string | null;
 	imageUrl: string | null;
 	createdAt: string;
+	editedAt: string | null;
 	sender: ChatUser;
+	replyTo: { id: string; content: string | null; imageUrl: string | null; sender: ChatUser } | null;
+	reactions: MessageReaction[];
 }
 
 export interface Conversation {

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth.store";
 import type { NotificationItem } from "@/hooks/useNotifications";
-import type { Conversation, DirectMessage } from "@/types";
+import type { Conversation, DirectMessage, MessageReaction } from "@/types";
 
 const WS_URL =
 	import.meta.env.VITE_WS_URL ||
@@ -14,7 +14,21 @@ type Message =
 	| { kind: "ready" }
 	| { kind: "notification"; data: NotificationItem }
 	| { kind: "unread_count"; count: number }
-	| { kind: "chat_message"; data: DirectMessage & { conversationId: string } };
+	| { kind: "chat_message"; data: DirectMessage & { conversationId: string } }
+	| {
+			kind: "message_reaction";
+			data: { messageId: string; conversationId: string; reactions: MessageReaction[] };
+	  }
+	| {
+			kind: "message_edit";
+			data: {
+				messageId: string;
+				conversationId: string;
+				content: string | null;
+				editedAt: string | null;
+			};
+	  }
+	| { kind: "message_delete"; data: { messageId: string; conversationId: string } };
 
 type MessagesCache = {
 	pages: { items: DirectMessage[]; nextCursor: string | null }[];
@@ -62,11 +76,11 @@ export function useRealtime() {
 				} else if (msg.kind === "unread_count") {
 					qc.setQueryData(["notifications", "unread-count"], msg.count);
 				} else if (msg.kind === "chat_message") {
-					const { conversationId, ...message } = msg.data;
+					const { conversationId } = msg.data;
+					const message: DirectMessage = { ...msg.data };
 					const isFromMe = message.senderId === userId;
 
-					// Own messages are already added by useSendMessage.onSuccess — skip cache write
-					// to avoid duplicates (WebSocket push arrives before the HTTP response resolves).
+					// Own messages are already added by useSendMessage.onSuccess — skip to avoid duplicates
 					if (!isFromMe) {
 						qc.setQueryData(["messages", conversationId], (old: MessagesCache | undefined) => {
 							if (!old || old.pages.length === 0) return old;
@@ -78,7 +92,6 @@ export function useRealtime() {
 						});
 					}
 
-					// Always update the conversations sidebar (last message + unread count)
 					qc.setQueryData(["conversations"], (old: Conversation[] | undefined) => {
 						if (!old) return old;
 						return old.map((conv) => {
@@ -90,6 +103,44 @@ export function useRealtime() {
 								updatedAt: message.createdAt,
 							};
 						});
+					});
+				} else if (msg.kind === "message_reaction") {
+					const { messageId, conversationId, reactions } = msg.data;
+					qc.setQueryData(["messages", conversationId], (old: MessagesCache | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.map((m) => (m.id === messageId ? { ...m, reactions } : m)),
+							})),
+						};
+					});
+				} else if (msg.kind === "message_edit") {
+					const { messageId, conversationId, content, editedAt } = msg.data;
+					qc.setQueryData(["messages", conversationId], (old: MessagesCache | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.map((m) =>
+									m.id === messageId ? { ...m, content, editedAt } : m,
+								),
+							})),
+						};
+					});
+				} else if (msg.kind === "message_delete") {
+					const { messageId, conversationId } = msg.data;
+					qc.setQueryData(["messages", conversationId], (old: MessagesCache | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.filter((m) => m.id !== messageId),
+							})),
+						};
 					});
 				}
 			};
