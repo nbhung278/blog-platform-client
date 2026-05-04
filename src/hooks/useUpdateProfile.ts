@@ -31,7 +31,7 @@ export function useUpdateProfile() {
 			if (avatarUrl !== undefined) payload.avatarUrl = avatarUrl;
 
 			const { data } = await api.patch<AuthUser>("/auth/me", payload);
-			setUser({ ...currentUser!, ...data });
+			setUser(currentUser ? { ...currentUser, ...data } : data);
 			return data;
 		},
 	});

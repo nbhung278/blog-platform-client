@@ -98,10 +98,12 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 	}, [conversationId]);
 
 	// ── Mark read on open ──
+	// `markRead.mutate` is stable across renders (TanStack Query guarantee), so
+	// adding it to deps doesn't cause a re-fire — only conversationId changes do.
+	const markReadFn = markRead.mutate;
 	useEffect(() => {
-		markRead.mutate();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [conversationId]);
+		markReadFn();
+	}, [conversationId, markReadFn]);
 
 	// ── IntersectionObserver: trigger fetchNextPage when top sentinel is visible ──
 	useEffect(() => {
@@ -173,15 +175,21 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 		setEditingMessage(null);
 	}
 
-	const handleReact = useCallback((messageId: string, emoji: ReactionEmoji) => {
-		react.mutate({ messageId, emoji });
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	const reactFn = react.mutate;
+	const deleteFn = deleteMsg.mutate;
+	const handleReact = useCallback(
+		(messageId: string, emoji: ReactionEmoji) => {
+			reactFn({ messageId, emoji });
+		},
+		[reactFn],
+	);
 
-	const handleDelete = useCallback((messageId: string, scope: "me" | "all") => {
-		deleteMsg.mutate({ messageId, scope });
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	const handleDelete = useCallback(
+		(messageId: string, scope: "me" | "all") => {
+			deleteFn({ messageId, scope });
+		},
+		[deleteFn],
+	);
 
 	return (
 		<div className="flex h-full flex-col">

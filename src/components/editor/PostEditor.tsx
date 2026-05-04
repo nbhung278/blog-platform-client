@@ -105,10 +105,18 @@ export default function PostEditor({ value, onChange, placeholder }: PostEditorP
 		const id = toast.loading(`Uploading ${file.name}...`);
 		try {
 			const { url } = await uploadsApi.uploadImage(file);
+			if (!mountedRef.current || editor.isDestroyed) {
+				toast.dismiss(id);
+				return;
+			}
 			editor.chain().focus().setImage({ src: url, alt: file.name }).run();
 			toast.success("Image uploaded", { id });
 		} catch (err: unknown) {
-			toast.error(formatApiError(err, "Upload failed"), { id });
+			if (mountedRef.current) {
+				toast.error(formatApiError(err, "Upload failed"), { id });
+			} else {
+				toast.dismiss(id);
+			}
 		} finally {
 			uploadingRef.current = false;
 		}

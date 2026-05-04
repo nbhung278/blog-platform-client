@@ -7,6 +7,7 @@ import {
 	useUnreadCount,
 	type NotificationItem,
 } from "@/hooks/useNotifications";
+import { useAuthStore } from "@/stores/auth.store";
 import { safeImageUrl } from "@/lib/sanitize";
 import { describeNotification } from "@/lib/notificationDescribe";
 
@@ -14,9 +15,10 @@ export default function NotificationBell() {
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 	const navigate = useNavigate();
+	const isAuthed = useAuthStore((s) => !!s.user);
 
-	const { data: unread = 0 } = useUnreadCount(true);
-	const { data: items = [], isLoading } = useRecentNotifications(open);
+	const { data: unread = 0 } = useUnreadCount(isAuthed);
+	const { data: items = [], isLoading } = useRecentNotifications(open && isAuthed);
 	const markRead = useMarkRead();
 
 	useEffect(() => {

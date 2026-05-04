@@ -27,7 +27,7 @@ export default function CommentDrawer({ postId, open, onClose }: Props) {
 	const [sort, setSort] = useState<CommentSort>("new");
 	const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useComments(
 		postId,
-		open ? sort : sort,
+		sort,
 	);
 
 	useEffect(() => {
