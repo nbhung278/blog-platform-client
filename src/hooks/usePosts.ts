@@ -21,6 +21,7 @@ export function useFeed(limit = 20) {
 			);
 			return res.data;
 		},
+		staleTime: 30_000,
 		refetchInterval: 60_000,
 		refetchIntervalInBackground: false,
 	});
@@ -50,6 +51,8 @@ export function usePost(slug: string) {
 			const res = await api.get<Post>(`/posts/${slug}`);
 			return res.data;
 		},
+		staleTime: 60_000,
+		refetchOnWindowFocus: false,
 	});
 }
 

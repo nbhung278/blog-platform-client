@@ -11,6 +11,34 @@ import PostActionBar from "@/components/blog/PostActionBar";
 import CommentDrawer from "@/components/blog/CommentDrawer";
 import { useComments } from "@/hooks/useComments";
 
+function setMeta(nameOrProp: string, content: string) {
+	const isOg = nameOrProp.startsWith("og:") || nameOrProp.startsWith("article:");
+	const attr = isOg ? "property" : "name";
+	let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${nameOrProp}"]`);
+	if (!el) {
+		el = document.createElement("meta");
+		el.setAttribute(attr, nameOrProp);
+		document.head.appendChild(el);
+	}
+	el.content = content;
+}
+
+function removeMeta(nameOrProp: string) {
+	const attr =
+		nameOrProp.startsWith("og:") || nameOrProp.startsWith("article:") ? "property" : "name";
+	document.querySelector(`meta[${attr}="${nameOrProp}"]`)?.remove();
+}
+
+function setCanonical(href: string) {
+	let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+	if (!link) {
+		link = document.createElement("link");
+		link.rel = "canonical";
+		document.head.appendChild(link);
+	}
+	link.href = href;
+}
+
 function formatDate(iso: string) {
 	return new Date(iso).toLocaleDateString("en-US", {
 		month: "short",
@@ -77,13 +105,34 @@ export default function BlogPostPage() {
 	const cleanHtml = useMemo(() => sanitizeHtml(post?.contentHtml ?? ""), [post?.contentHtml]);
 
 	useEffect(() => {
-		if (post) {
-			document.title = `Strix | ${post.title}`;
-			return () => {
-				document.title = "Strix";
-			};
-		}
-	}, [post]);
+		if (!post) return;
+		const description = post.excerpt ?? post.title;
+		const canonical = `${window.location.origin}/blog/${post.user?.username ?? username}/${post.slug}`;
+
+		document.title = `${post.title} | Strix`;
+		setMeta("description", description);
+		setMeta("og:type", "article");
+		setMeta("og:title", post.title);
+		setMeta("og:description", description);
+		if (post.coverUrl) setMeta("og:image", post.coverUrl);
+		setMeta("twitter:title", post.title);
+		setMeta("twitter:description", description);
+		if (post.coverUrl) setMeta("twitter:image", post.coverUrl);
+		setCanonical(canonical);
+
+		return () => {
+			document.title = "Strix — Code as Craft";
+			removeMeta("description");
+			removeMeta("og:type");
+			removeMeta("og:title");
+			removeMeta("og:description");
+			removeMeta("og:image");
+			removeMeta("twitter:title");
+			removeMeta("twitter:description");
+			removeMeta("twitter:image");
+			document.querySelector('link[rel="canonical"]')?.remove();
+		};
+	}, [post, username]);
 
 	const recentPosts = (feedData?.items ?? []).filter((p) => p.slug !== slug).slice(0, 3);
 
@@ -130,7 +179,8 @@ export default function BlogPostPage() {
 					<img
 						src={post.coverUrl}
 						alt=""
-						loading="lazy"
+						loading="eager"
+						fetchPriority="high"
 						className="aspect-21/9 w-full rounded object-cover"
 					/>
 				</div>

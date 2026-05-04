@@ -27,6 +27,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 	},
 
 	async loadMe() {
+		// The CSRF cookie is set on login and cleared on logout. Its absence means
+		// there is no active session — skip the network round-trip entirely so
+		// unauthenticated page loads don't produce noisy 401 → /refresh waterfalls.
+		const hasCsrf = document.cookie.split("; ").some((r) => r.startsWith("web_csrf="));
+		if (!hasCsrf) {
+			set({ user: null, initialized: true });
+			return;
+		}
 		set({ loading: true });
 		try {
 			const { data } = await api.get<AuthUser>("/auth/me");
