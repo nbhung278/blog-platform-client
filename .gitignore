@@ -7,6 +7,7 @@ build/
 .env.production
 .env.development
 *.log
+*.tsbuildinfo
 .DS_Store
 .idea/
 .vscode/
