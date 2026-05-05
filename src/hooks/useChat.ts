@@ -14,6 +14,9 @@ export function useConversations() {
 			const res = await api.get<Conversation[]>("/conversations");
 			return res.data;
 		},
+		// WS pushes deltas into this cache directly; tab-focus refetch would
+		// overwrite optimistic ordering, so disable automatic refresh.
+		staleTime: Infinity,
 	});
 }
 
@@ -30,6 +33,7 @@ export function useMessages(conversationId: string) {
 		},
 		initialPageParam: null as string | null,
 		getNextPageParam: (lastPage) => lastPage.nextCursor,
+		staleTime: Infinity,
 	});
 }
 
@@ -77,6 +81,9 @@ export function useMarkRead(conversationId: string) {
 				old?.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)),
 			);
 		},
+		onError: () => {
+			qc.invalidateQueries({ queryKey: ["conversations"] });
+		},
 	});
 }
 
@@ -101,6 +108,9 @@ export function useReactToMessage(conversationId: string) {
 					})),
 				};
 			});
+		},
+		onError: () => {
+			qc.invalidateQueries({ queryKey: ["messages", conversationId] });
 		},
 	});
 }
@@ -127,6 +137,9 @@ export function useEditMessage(conversationId: string) {
 				};
 			});
 		},
+		onError: () => {
+			qc.invalidateQueries({ queryKey: ["messages", conversationId] });
+		},
 	});
 }
 
@@ -148,6 +161,9 @@ export function useDeleteMessage(conversationId: string) {
 					})),
 				};
 			});
+		},
+		onError: () => {
+			qc.invalidateQueries({ queryKey: ["messages", conversationId] });
 		},
 	});
 }

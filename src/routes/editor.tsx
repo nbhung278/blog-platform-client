@@ -10,6 +10,7 @@ import { htmlToMarkdown } from "@/lib/markdown";
 import { POST_STATUS_LABEL, POST_STATUS_PILL_CLASS } from "@/lib/postStatus";
 import { ALLOWED_IMAGE_TYPES } from "@/lib/constants";
 import { formatApiError, type ApiError } from "@/lib/apiErrors";
+import { notify } from "@/lib/notify";
 import type { PostStatus } from "@/types";
 
 const INPUT_CLASS =
@@ -29,7 +30,7 @@ export default function EditorPage() {
 
 function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string }) {
 	const navigate = useNavigate();
-	const user = useAuthStore((s) => s.user)!;
+	const user = useAuthStore((s) => s.user);
 
 	const postQuery = usePostById(mode === "edit" ? postId : undefined);
 	const categoriesQuery = useCategories();
@@ -69,7 +70,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 			const { url } = await uploadsApi.uploadImage(file);
 			setCoverUrl(url);
 		} catch {
-			// upload failed silently, user can retry
+			notify.error("Failed to upload cover image");
 		} finally {
 			setUploadingCover(false);
 			if (fileInputRef.current) fileInputRef.current.value = "";
@@ -83,11 +84,20 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	const submitting = createPost.isPending || updatePost.isPending;
 
 	async function save(nextStatus: PostStatus) {
-		if (formInvalid) return;
+		if (formInvalid || !user) return;
+
+		let contentMd: string;
+		try {
+			contentMd = htmlToMarkdown(contentHtml);
+		} catch {
+			notify.error("Failed to convert content. Please try again.");
+			return;
+		}
+
 		const payload = {
 			title: title.trim(),
 			contentHtml,
-			contentMd: htmlToMarkdown(contentHtml),
+			contentMd,
 			excerpt: excerpt.trim() || undefined,
 			coverUrl: coverUrl.trim() || null,
 			status: nextStatus,
@@ -111,9 +121,14 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 			const apiErr = err as ApiError;
 			const code = apiErr.response?.status;
 			if (code === 409 || code === 401 || code === 403) return;
-			console.error(formatApiError(apiErr));
+			notify.error(formatApiError(apiErr));
 		}
 	}
+
+	// `RequireAuth` gates rendering on a logged-in user, but on the brief commit
+	// window after a logout-while-mounted the store has cleared `user` before
+	// RequireAuth's effect navigates away. Bail rather than asserting non-null.
+	if (!user) return null;
 
 	if (mode === "edit" && postQuery.isLoading) {
 		return (

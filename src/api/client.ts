@@ -53,12 +53,13 @@ export function registerOnAuthLost(cb: () => void) {
 }
 
 async function performRefresh(): Promise<boolean> {
+	// Echo the CSRF cookie via header — backend now requires it on /refresh
+	// to defend against cross-site forced refresh under SameSite=None cookies.
+	const headers: Record<string, string> = { [APP_HEADER]: APP_KIND_WEB };
+	const csrf = getCsrf();
+	if (csrf) headers[CSRF_HEADER] = csrf;
 	try {
-		await axios.post(
-			`${API_URL}/auth/refresh`,
-			{},
-			{ withCredentials: true, headers: { [APP_HEADER]: APP_KIND_WEB } },
-		);
+		await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true, headers });
 		invalidateCsrfCache();
 		return true;
 	} catch {

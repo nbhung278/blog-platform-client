@@ -108,16 +108,17 @@ export default function BlogPostPage() {
 		if (!post) return;
 		const description = post.excerpt ?? post.title;
 		const canonical = `${window.location.origin}/blog/${post.user?.username ?? username}/${post.slug}`;
+		const safeCover = safeImageUrl(post.coverUrl);
 
 		document.title = `${post.title} | Strix`;
 		setMeta("description", description);
 		setMeta("og:type", "article");
 		setMeta("og:title", post.title);
 		setMeta("og:description", description);
-		if (post.coverUrl) setMeta("og:image", post.coverUrl);
+		if (safeCover) setMeta("og:image", safeCover);
 		setMeta("twitter:title", post.title);
 		setMeta("twitter:description", description);
-		if (post.coverUrl) setMeta("twitter:image", post.coverUrl);
+		if (safeCover) setMeta("twitter:image", safeCover);
 		setCanonical(canonical);
 
 		return () => {
@@ -158,6 +159,7 @@ export default function BlogPostPage() {
 
 	const date = post.publishedAt ?? post.updatedAt;
 	const authorAvatar = safeImageUrl(post.user?.avatarUrl);
+	const safeCoverUrl = safeImageUrl(post.coverUrl);
 
 	return (
 		<div className="flex min-h-screen flex-col bg-white font-sans">
@@ -174,12 +176,13 @@ export default function BlogPostPage() {
 			/>
 
 			{/* Cover image */}
-			{post.coverUrl && (
+			{safeCoverUrl && (
 				<div className="mx-auto max-w-7xl px-6 pt-10">
 					<img
-						src={post.coverUrl}
+						src={safeCoverUrl}
 						alt=""
 						loading="eager"
+						decoding="async"
 						fetchPriority="high"
 						className="aspect-21/9 w-full rounded object-cover"
 					/>

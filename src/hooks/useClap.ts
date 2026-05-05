@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import { CSRF_COOKIE_NAME, CSRF_HEADER, APP_HEADER, APP_KIND_WEB } from "@/lib/authConstants";
@@ -63,7 +63,10 @@ function readCsrfCookie(): string | null {
 export function useClap(target: ClappableTarget) {
 	const qc = useQueryClient();
 	const { kind, id } = target;
-	const queryKey = kind === "post" ? postClapKey(id) : commentClapKey(id);
+	const queryKey = useMemo(
+		() => (kind === "post" ? postClapKey(id) : commentClapKey(id)),
+		[kind, id],
+	);
 
 	const pendingRef = useRef(0);
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

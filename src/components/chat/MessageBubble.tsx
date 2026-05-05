@@ -149,6 +149,10 @@ function MessageBubble({
 							<img
 								src={message.sender.avatarUrl}
 								alt={message.sender.name}
+								width={28}
+								height={28}
+								loading="lazy"
+								decoding="async"
 								className="h-full w-full object-cover"
 							/>
 						) : (
@@ -256,7 +260,11 @@ function MessageBubble({
 									<a href={message.imageUrl!} target="_blank" rel="noopener noreferrer">
 										<img
 											src={message.imageUrl!}
-											alt="attachment"
+											alt=""
+											width={320}
+											height={288}
+											loading="lazy"
+											decoding="async"
 											className="max-h-72 max-w-xs rounded-xl object-cover shadow-sm"
 										/>
 									</a>
@@ -265,7 +273,11 @@ function MessageBubble({
 									<div className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
 										<img
 											src={message.replyTo!.imageUrl}
-											alt="reply"
+											alt=""
+											width={320}
+											height={240}
+											loading="lazy"
+											decoding="async"
 											className="block max-h-60 max-w-xs rounded-2xl object-cover"
 										/>
 										{hasText && (
@@ -285,7 +297,11 @@ function MessageBubble({
 												{message.replyTo!.imageUrl && (
 													<img
 														src={message.replyTo!.imageUrl}
-														alt="reply"
+														alt=""
+														width={32}
+														height={32}
+														loading="lazy"
+														decoding="async"
 														className="h-8 w-8 shrink-0 rounded object-cover"
 													/>
 												)}
@@ -313,7 +329,11 @@ function MessageBubble({
 									<a href={message.imageUrl!} target="_blank" rel="noopener noreferrer">
 										<img
 											src={message.imageUrl!}
-											alt="attachment"
+											alt=""
+											width={320}
+											height={240}
+											loading="lazy"
+											decoding="async"
 											className="max-h-60 max-w-xs rounded-xl object-cover shadow-sm"
 										/>
 									</a>

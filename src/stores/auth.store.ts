@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { AxiosError } from "axios";
 import { api, invalidateCsrfCache, registerOnAuthLost } from "@/api/client";
+import { CSRF_COOKIE_NAME } from "@/lib/authConstants";
 import type { User } from "@/types";
 
 export type AuthUser = Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl">;
@@ -30,7 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 		// The CSRF cookie is set on login and cleared on logout. Its absence means
 		// there is no active session — skip the network round-trip entirely so
 		// unauthenticated page loads don't produce noisy 401 → /refresh waterfalls.
-		const hasCsrf = document.cookie.split("; ").some((r) => r.startsWith("web_csrf="));
+		const hasCsrf = document.cookie.split("; ").some((r) => r.startsWith(`${CSRF_COOKIE_NAME}=`));
 		if (!hasCsrf) {
 			set({ user: null, initialized: true });
 			return;

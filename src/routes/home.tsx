@@ -91,8 +91,8 @@ export default function HomePage() {
 				<section className="mx-auto max-w-7xl px-6 pt-12 pb-16">
 					<h2 className="text-brand-dark mb-8 font-serif text-3xl font-bold">Featured</h2>
 					<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
-						{featuredPosts.map((post) => (
-							<FeaturedCard key={post.id} post={post} />
+						{featuredPosts.map((post, i) => (
+							<FeaturedCard key={post.id} post={post} priority={i === 0} />
 						))}
 					</div>
 				</section>

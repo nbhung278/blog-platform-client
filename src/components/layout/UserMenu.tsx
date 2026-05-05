@@ -117,7 +117,15 @@ export default function UserMenu({ user }: UserMenuProps) {
 			>
 				<span className="sr-only">{user.name}</span>
 				{avatarUrl ? (
-					<img src={avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+					<img
+						src={avatarUrl}
+						alt={user.name}
+						width={36}
+						height={36}
+						loading="lazy"
+						decoding="async"
+						className="h-full w-full object-cover"
+					/>
 				) : (
 					<span
 						aria-hidden="true"

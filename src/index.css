@@ -118,16 +118,27 @@
 	}
 }
 
-/* Brief highlight when a comment is reached via deep link (notification click). */
+/* Brief highlight when a comment is reached via deep link (notification click).
+   Uses an ::after overlay animated via opacity so the animation is composited
+   on the GPU instead of repainting the element's background each frame. */
 .comment-flash {
-	animation: comment-flash 1.6s ease-out;
+	position: relative;
+}
+.comment-flash::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: rgba(252, 211, 77, 0.3);
+	pointer-events: none;
+	will-change: opacity;
+	animation: comment-flash 1.6s ease-out forwards;
 }
 @keyframes comment-flash {
 	0% {
-		background-color: rgba(252, 211, 77, 0.3);
+		opacity: 1;
 	}
 	100% {
-		background-color: transparent;
+		opacity: 0;
 	}
 }
 

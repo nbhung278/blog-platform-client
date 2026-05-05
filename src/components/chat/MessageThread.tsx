@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAuthStore } from "@/stores/auth.store";
 import {
 	useMessages,
@@ -77,16 +77,20 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 	const topSentinelRef = useRef<HTMLDivElement>(null);
 
 	// ── Flatten pages (oldest → newest) ──
-	const allMessages: DirectMessage[] = [];
-	const seen = new Set<string>();
-	for (const page of (data?.pages ?? []).slice().reverse()) {
-		for (const msg of page.items) {
-			if (!seen.has(msg.id)) {
-				seen.add(msg.id);
-				allMessages.push(msg);
+	const allMessages = useMemo<DirectMessage[]>(() => {
+		const out: DirectMessage[] = [];
+		const seen = new Set<string>();
+		for (const page of (data?.pages ?? []).slice().reverse()) {
+			for (const msg of page.items) {
+				if (!seen.has(msg.id)) {
+					seen.add(msg.id);
+					out.push(msg);
+				}
 			}
 		}
-	}
+		return out;
+	}, [data]);
+	const lastMsgId = allMessages[allMessages.length - 1]?.id ?? "";
 
 	// ── Reset scroll state when conversation changes ──
 	useEffect(() => {
@@ -135,20 +139,18 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 	// ── Scroll to bottom: on initial load and when a new message arrives ──
 	useLayoutEffect(() => {
 		const el = scrollRef.current;
-		if (!el || allMessages.length === 0) return;
-
-		const lastMsg = allMessages[allMessages.length - 1];
+		if (!el || !lastMsgId) return;
 
 		// If the last message ID changed, a new message arrived (sent or received)
-		if (lastMsg.id !== lastScrolledMsgIdRef.current) {
-			lastScrolledMsgIdRef.current = lastMsg.id;
+		if (lastMsgId !== lastScrolledMsgIdRef.current) {
+			lastScrolledMsgIdRef.current = lastMsgId;
 
 			// Scroll to bottom if: first load OR user is already near bottom
 			if (isNearBottomRef.current) {
 				el.scrollTop = el.scrollHeight;
 			}
 		}
-	}, [allMessages]);
+	}, [lastMsgId]);
 
 	function handleScroll() {
 		const el = scrollRef.current;

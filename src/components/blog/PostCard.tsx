@@ -19,7 +19,10 @@ const PostCard = memo(function PostCard({ post, username }: PostCardProps) {
 				<img
 					src={post.coverUrl}
 					alt=""
+					width={1200}
+					height={600}
 					loading="lazy"
+					decoding="async"
 					className="aspect-2/1 w-full object-cover transition group-hover:opacity-95"
 				/>
 			)}

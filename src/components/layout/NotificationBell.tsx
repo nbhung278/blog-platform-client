@@ -112,6 +112,10 @@ function Avatar({ item }: { item: NotificationItem }) {
 			<img
 				src={src}
 				alt={actor?.name ?? ""}
+				width={36}
+				height={36}
+				loading="lazy"
+				decoding="async"
 				className="h-9 w-9 shrink-0 rounded-full object-cover"
 			/>
 		);

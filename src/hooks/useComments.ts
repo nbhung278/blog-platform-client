@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
 	useInfiniteQuery,
 	useMutation,
@@ -191,7 +191,7 @@ function readCsrfCookie(): string | null {
 
 export function useCommentClap(postId: string, sort: CommentSort = "new") {
 	const qc = useQueryClient();
-	const queryKey = commentsKey(postId, sort);
+	const queryKey = useMemo(() => commentsKey(postId, sort), [postId, sort]);
 
 	const pendingMap = useRef(new Map<string, number>());
 	const timerMap = useRef(new Map<string, ReturnType<typeof setTimeout>>());

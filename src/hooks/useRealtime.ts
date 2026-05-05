@@ -4,11 +4,21 @@ import { useAuthStore } from "@/stores/auth.store";
 import type { NotificationItem } from "@/hooks/useNotifications";
 import type { Conversation, DirectMessage, MessageReaction } from "@/types";
 
-const WS_URL =
-	import.meta.env.VITE_WS_URL ||
-	(import.meta.env.VITE_API_URL ?? "http://localhost:3000/api")
-		.replace(/^http/, "ws")
-		.replace(/\/api\/?$/, "") + "/ws";
+function deriveWsUrl(): string {
+	if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+	const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+	if (!/\/api\/?$/.test(apiUrl)) {
+		// VITE_API_URL doesn't end in /api, so the derived ws URL won't strip
+		// anything. Surface this so we don't silently connect to a wrong host.
+		console.warn(
+			"[realtime] VITE_API_URL does not end in /api; set VITE_WS_URL explicitly",
+			apiUrl,
+		);
+	}
+	return apiUrl.replace(/^http/, "ws").replace(/\/api\/?$/, "") + "/ws";
+}
+
+const WS_URL = deriveWsUrl();
 
 type Message =
 	| { kind: "ready" }
@@ -157,8 +167,34 @@ export function useRealtime() {
 
 		connect();
 
+		// Close socket on pagehide so the page is eligible for the back/forward
+		// cache. Reopen on pageshow when the tab is revived from bfcache.
+		const onPageHide = () => {
+			if (pingTimer) clearInterval(pingTimer);
+			pingTimer = null;
+			if (reconnectTimer) clearTimeout(reconnectTimer);
+			reconnectTimer = null;
+			if (ws) {
+				// Detach onclose first so the close below doesn't schedule a reconnect
+				// while the tab is being parked into bfcache.
+				ws.onclose = null;
+				ws.close();
+				ws = null;
+			}
+		};
+		const onPageShow = (e: PageTransitionEvent) => {
+			if (e.persisted && !stopped) {
+				retry = 0;
+				connect();
+			}
+		};
+		window.addEventListener("pagehide", onPageHide);
+		window.addEventListener("pageshow", onPageShow);
+
 		return () => {
 			stopped = true;
+			window.removeEventListener("pagehide", onPageHide);
+			window.removeEventListener("pageshow", onPageShow);
 			if (pingTimer) clearInterval(pingTimer);
 			if (reconnectTimer) clearTimeout(reconnectTimer);
 			ws?.close();

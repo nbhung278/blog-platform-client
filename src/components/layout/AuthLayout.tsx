@@ -45,6 +45,8 @@ export default function AuthLayout({ title, subtitle, children, footer }: AuthLa
 						<img
 							src={HERO_IMAGE}
 							alt=""
+							width={800}
+							height={1000}
 							loading="eager"
 							decoding="async"
 							fetchPriority="high"

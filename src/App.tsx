@@ -1,12 +1,16 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Outlet } from "@tanstack/react-router";
 import Notify from "@/components/Notify";
 import { useAuthStore } from "@/stores/auth.store";
-import { useRealtime } from "@/hooks/useRealtime";
+
+// Realtime hook is only useful for logged-in users; mount it lazily so its
+// WebSocket + react-query plumbing isn't part of the first-load critical path
+// for unauthenticated visitors (the most common landing case).
+const RealtimeBridge = lazy(() => import("@/components/RealtimeBridge"));
 
 export default function App() {
 	const loadMe = useAuthStore((s) => s.loadMe);
-	useRealtime();
+	const userId = useAuthStore((s) => s.user?.id);
 
 	useEffect(() => {
 		loadMe();
@@ -23,6 +27,11 @@ export default function App() {
 			>
 				<Outlet />
 			</Suspense>
+			{userId && (
+				<Suspense fallback={null}>
+					<RealtimeBridge />
+				</Suspense>
+			)}
 			<Notify />
 		</div>
 	);

@@ -3,7 +3,12 @@ import { Link } from "@tanstack/react-router";
 import type { Post } from "@/types";
 import PostMeta from "./PostMeta";
 
-const FeaturedCard = memo(function FeaturedCard({ post }: { post: Post }) {
+interface Props {
+	post: Post;
+	priority?: boolean;
+}
+
+const FeaturedCard = memo(function FeaturedCard({ post, priority = false }: Props) {
 	return (
 		<Link
 			to="/blog/$username/$slug"
@@ -14,7 +19,11 @@ const FeaturedCard = memo(function FeaturedCard({ post }: { post: Post }) {
 				<img
 					src={post.coverUrl}
 					alt={post.title}
-					loading="lazy"
+					width={1200}
+					height={675}
+					loading={priority ? "eager" : "lazy"}
+					decoding="async"
+					fetchPriority={priority ? "high" : "auto"}
 					className="aspect-video w-full object-cover"
 				/>
 			) : (

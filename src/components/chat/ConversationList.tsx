@@ -27,7 +27,15 @@ function Avatar({
 	return (
 		<div className={`${cls} shrink-0 overflow-hidden rounded-full`}>
 			{avatarUrl ? (
-				<img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+				<img
+					src={avatarUrl}
+					alt={name}
+					width={size === "sm" ? 32 : 40}
+					height={size === "sm" ? 32 : 40}
+					loading="lazy"
+					decoding="async"
+					className="h-full w-full object-cover"
+				/>
 			) : (
 				<div className="bg-brand-hero text-brand flex h-full w-full items-center justify-center font-semibold">
 					{name[0]?.toUpperCase()}
@@ -81,6 +89,7 @@ function NewChatModal({ onClose }: { onClose: () => void }) {
 					{users.map((user) => (
 						<button
 							key={user.id}
+							type="button"
 							onClick={() => handleSelect(user.id)}
 							disabled={start.isPending}
 							className="hover:bg-brand-hero flex w-full items-center gap-3 px-4 py-2.5 transition-colors"
@@ -161,6 +170,7 @@ export default function ConversationList({ activeConversationId }: Props) {
 				<div className="border-brand-border flex items-center justify-between border-b px-4 py-4">
 					<h2 className="text-brand-dark font-serif text-lg font-semibold">Messages</h2>
 					<button
+						type="button"
 						onClick={() => setShowNewChat(true)}
 						className="text-brand-mid hover:text-brand transition-colors"
 						aria-label="New conversation"
@@ -188,6 +198,7 @@ export default function ConversationList({ activeConversationId }: Props) {
 						<div className="px-4 py-10 text-center">
 							<p className="text-brand-mid text-sm">No conversations yet.</p>
 							<button
+								type="button"
 								onClick={() => setShowNewChat(true)}
 								className="text-brand mt-2 text-sm underline"
 							>

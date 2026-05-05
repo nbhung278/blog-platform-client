@@ -21,9 +21,11 @@ export function useFeed(limit = 20) {
 			);
 			return res.data;
 		},
-		staleTime: 30_000,
-		refetchInterval: 60_000,
-		refetchIntervalInBackground: false,
+		// No polling — feed refreshes when the user navigates back or refocuses
+		// the tab. Constant background fetches were burning API quota and
+		// battery for negligible UX gain on a blog feed.
+		staleTime: 60_000,
+		refetchOnWindowFocus: true,
 	});
 }
 
@@ -34,13 +36,8 @@ export function usePublicPosts(username: string) {
 			const res = await api.get<Post[]>(`/posts/public/${username}`);
 			return res.data;
 		},
-		// Match staleTime to the poll cadence: navigating back to a recently
-		// viewed profile reuses the cache for up to 30s, then the interval
-		// keeps it fresh while the page is in the foreground.
-		staleTime: 30_000,
+		staleTime: 60_000,
 		refetchOnWindowFocus: true,
-		refetchInterval: 30_000,
-		refetchIntervalInBackground: false,
 	});
 }
 
