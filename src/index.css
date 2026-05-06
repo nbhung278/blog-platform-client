@@ -79,6 +79,94 @@
 	height: 0;
 	pointer-events: none;
 }
+.tiptap mark,
+.post-content mark {
+	background-color: oklch(0.95 0.15 95);
+	border-radius: 0.25rem;
+	padding: 0.05em 0.15em;
+	color: inherit;
+}
+.tiptap u,
+.post-content u {
+	text-decoration: underline;
+}
+.tiptap s,
+.post-content s {
+	text-decoration: line-through;
+}
+.tiptap table,
+.post-content table {
+	border-collapse: collapse;
+	margin: 1em 0;
+	overflow: hidden;
+	table-layout: fixed;
+	width: 100%;
+}
+.tiptap table td,
+.tiptap table th,
+.post-content table td,
+.post-content table th {
+	border: 1px solid var(--color-brand-border);
+	box-sizing: border-box;
+	min-width: 1em;
+	padding: 0.5em 0.75em;
+	position: relative;
+	vertical-align: top;
+}
+.tiptap table th,
+.post-content table th {
+	background-color: var(--color-brand-hero);
+	font-weight: 600;
+	text-align: left;
+}
+.tiptap table .selectedCell::after {
+	background: oklch(0.6 0.18 250 / 0.15);
+	content: "";
+	inset: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: 2;
+}
+.tiptap table .column-resize-handle {
+	background-color: oklch(0.6 0.18 250);
+	bottom: -2px;
+	pointer-events: none;
+	position: absolute;
+	right: -2px;
+	top: 0;
+	width: 4px;
+}
+.tiptap.resize-cursor {
+	cursor: ew-resize;
+	cursor: col-resize;
+}
+.tiptap-bubble-menu {
+	display: flex;
+	background: white;
+	color: var(--color-brand-dark);
+	border: 1px solid var(--color-brand-border);
+	border-radius: 0.5rem;
+	box-shadow: 0 4px 14px oklch(0 0 0 / 0.1);
+	padding: 0.25rem;
+	gap: 0.125rem;
+}
+.tiptap-floating-menu {
+	display: flex;
+	gap: 0.125rem;
+}
+.tiptap div[data-youtube-video],
+.post-content div[data-youtube-video] {
+	margin: 1.5rem 0;
+	aspect-ratio: 16 / 9;
+}
+.tiptap div[data-youtube-video] iframe,
+.post-content div[data-youtube-video] iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	border-radius: 0.5rem;
+	display: block;
+}
 
 @theme {
 	--font-serif: "Playfair Display", Georgia, serif;

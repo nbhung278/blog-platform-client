@@ -94,12 +94,26 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 			return;
 		}
 
+		// External URL → rehost onto our S3 so the backend allowlist accepts it.
+		// Backend short-circuits when the URL is already on-host.
+		let finalCoverUrl = coverUrl.trim() || null;
+		if (finalCoverUrl) {
+			try {
+				const { url } = await uploadsApi.uploadFromUrl(finalCoverUrl);
+				finalCoverUrl = url;
+				if (url !== coverUrl.trim()) setCoverUrl(url);
+			} catch (err) {
+				notify.error(formatApiError(err as ApiError, "Failed to fetch cover image"));
+				return;
+			}
+		}
+
 		const payload = {
 			title: title.trim(),
 			contentHtml,
 			contentMd,
 			excerpt: excerpt.trim() || undefined,
-			coverUrl: coverUrl.trim() || null,
+			coverUrl: finalCoverUrl,
 			status: nextStatus,
 			tags: tagsInput
 				.split(",")

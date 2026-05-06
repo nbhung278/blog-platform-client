@@ -7,4 +7,8 @@ export const uploadsApi = {
 		const { data } = await api.post<{ url: string }>("/uploads/image", form);
 		return data;
 	},
+	uploadFromUrl: async (url: string): Promise<{ url: string }> => {
+		const { data } = await api.post<{ url: string }>("/uploads/from-url", { url });
+		return data;
+	},
 };
