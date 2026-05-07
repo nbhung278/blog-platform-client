@@ -31,14 +31,16 @@ const FeaturedCard = memo(function FeaturedCard({ post, priority = false }: Prop
 					<span className="text-brand-border font-serif text-5xl font-bold">{post.title[0]}</span>
 				</div>
 			)}
-			<div className="flex flex-1 flex-col p-6">
-				<h3 className="text-brand-dark font-serif text-xl leading-snug font-bold group-hover:underline">
+			<div className="flex flex-1 flex-col p-5 md:p-6">
+				<h3 className="text-brand-dark font-serif text-xl leading-tight font-bold group-hover:underline md:leading-snug">
 					{post.title}
 				</h3>
 				{post.excerpt && (
-					<p className="text-brand-mid mt-3 line-clamp-3 text-sm leading-relaxed">{post.excerpt}</p>
+					<p className="text-brand-mid mt-3 line-clamp-2 text-base leading-relaxed md:line-clamp-3 md:text-sm">
+						{post.excerpt}
+					</p>
 				)}
-				<div className="mt-auto pt-5">
+				<div className="mt-auto pt-4 md:pt-5">
 					<PostMeta post={post} />
 				</div>
 			</div>

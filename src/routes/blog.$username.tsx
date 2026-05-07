@@ -48,20 +48,25 @@ export default function BlogUserPage() {
 		<div className="bg-brand-surface flex min-h-screen flex-col font-sans">
 			<SiteHeader
 				navContent={
-					<Link to="/" className="text-brand-mid hover:text-brand-dark text-sm transition-colors">
+					<Link
+						to="/"
+						className="text-brand-mid hover:text-brand-dark hidden text-sm transition-colors md:inline"
+					>
 						← Back to Strix
 					</Link>
 				}
 			/>
 
 			<div className="bg-brand-hero border-brand-border border-b">
-				<div className="mx-auto max-w-7xl px-6 py-10">
+				<div className="mx-auto max-w-7xl px-5 py-10 md:px-6">
 					<p className="text-brand-mid font-serif text-sm tracking-widest uppercase">Author</p>
-					<h1 className="text-brand-dark mt-1 font-serif text-4xl font-bold">{displayName}</h1>
+					<h1 className="text-brand-dark mt-1 font-serif text-3xl font-bold md:text-4xl">
+						{displayName}
+					</h1>
 				</div>
 			</div>
 
-			<div className="mx-auto max-w-7xl px-6 py-12">
+			<div className="mx-auto max-w-7xl px-5 py-12 md:px-6">
 				<div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[280px_minmax(0,900px)] lg:justify-between">
 					<aside className="lg:sticky lg:top-28 lg:self-start">
 						<div className="bg-brand-surface border-brand-border rounded-2xl border p-6 shadow-sm">
@@ -171,7 +176,7 @@ export default function BlogUserPage() {
 						{!isLoading && !isError && posts && posts.length === 0 && (
 							<div className="py-24 text-center">
 								<p className="text-brand-mid font-serif text-2xl">
-									{isOwner ? "You haven't written any posts yet" : "No posts yet"}
+									{isOwner ? "You haven’t written any posts yet" : "No posts yet"}
 								</p>
 								{isOwner && (
 									<Link
@@ -241,8 +246,8 @@ export default function BlogUserPage() {
 function StatCell({ label, value }: { label: string; value: number }) {
 	return (
 		<div className="flex flex-col items-center px-2 py-3">
-			<span className="text-brand-dark font-serif text-xl font-bold">{value}</span>
-			<span className="text-brand-mid mt-0.5 text-[9px] tracking-widest uppercase">{label}</span>
+			<span className="text-brand-dark font-serif text-2xl font-bold tabular-nums">{value}</span>
+			<span className="text-brand-mid mt-1 text-xs">{label}</span>
 		</div>
 	);
 }

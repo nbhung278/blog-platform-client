@@ -32,9 +32,11 @@ export default function CategoryPage() {
 		<div className="flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader />
 
-			<div className="bg-brand-hero px-6 py-16 text-center">
+			<div className="bg-brand-hero px-5 py-12 text-center md:px-6 md:py-16">
 				<p className="text-brand-mid mb-2 text-sm">Category</p>
-				<h1 className="text-brand-dark font-serif text-5xl font-bold capitalize">{name}</h1>
+				<h1 className="text-brand-dark font-serif text-3xl font-bold capitalize md:text-5xl">
+					{name}
+				</h1>
 				{data && data.total > 0 && (
 					<p className="text-brand-mid mt-3 text-sm">
 						{data.total} {data.total === 1 ? "post" : "posts"}
@@ -42,7 +44,7 @@ export default function CategoryPage() {
 				)}
 			</div>
 
-			<main className="mx-auto w-full max-w-7xl px-6 py-12">
+			<main className="mx-auto w-full max-w-7xl px-5 py-12 md:px-6">
 				{isError && <p className="py-10 text-center text-red-500">Failed to load posts.</p>}
 
 				{isLoading && !data && (

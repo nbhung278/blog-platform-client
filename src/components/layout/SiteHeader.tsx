@@ -11,6 +11,9 @@ interface SiteHeaderProps {
 	navContent?: ReactNode;
 }
 
+const MOBILE_NAV_LINK_CLASS =
+	"text-brand-dark hover:bg-brand-hero w-full px-6 py-3 text-base font-medium transition-colors";
+
 function SearchIcon() {
 	return (
 		<svg
@@ -107,29 +110,41 @@ function ChevronDownIcon() {
 
 function SearchBar({
 	onSubmit,
-	className = "",
+	variant = "pill",
 }: {
 	onSubmit: (q: string) => void;
-	className?: string;
+	variant?: "pill" | "block";
 }) {
 	const [value, setValue] = useState("");
+	const isBlock = variant === "block";
 	return (
 		<form
-			className={`border-brand-border flex items-center gap-2 rounded-full border px-4 py-2 ${className}`}
+			className={
+				isBlock
+					? "border-brand-border bg-brand-surface flex w-full items-center gap-2 rounded-md border px-3 py-2.5"
+					: "border-brand-border flex items-center gap-2 rounded-full border px-4 py-2"
+			}
 			onSubmit={(e) => {
 				e.preventDefault();
 				if (value.trim()) onSubmit(value.trim());
 			}}
 		>
+			{isBlock && <SearchIcon />}
 			<input
+				type="search"
+				name="q"
 				placeholder="Search Strix…"
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
-				className="text-brand-dark placeholder:text-brand-mid w-36 bg-transparent text-sm outline-none"
+				className={`text-brand-dark placeholder:text-brand-mid bg-transparent text-sm outline-none ${
+					isBlock ? "min-w-0 flex-1" : "w-36"
+				}`}
 			/>
-			<button type="submit" className="flex items-center">
-				<SearchIcon />
-			</button>
+			{!isBlock && (
+				<button type="submit" aria-label="Submit search" className="flex items-center">
+					<SearchIcon />
+				</button>
+			)}
 		</form>
 	);
 }
@@ -209,7 +224,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 
 	return (
 		<header className="bg-brand-cream border-brand-border sticky top-0 z-50 border-b">
-			<div className="mx-auto flex max-w-7xl items-end justify-between gap-6 px-6 py-5">
+			<div className="mx-auto flex max-w-7xl items-end justify-between gap-6 px-5 py-3 md:px-6 md:py-5">
 				<Link to="/" className="flex shrink-0 items-end gap-2.5">
 					<div className="bg-brand flex h-9 items-center justify-center px-2.5">
 						<span className="font-serif text-lg font-bold tracking-wide text-white">
@@ -219,11 +234,13 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 					<span className="text-brand-dark font-serif text-lg font-semibold">Code as Craft</span>
 				</Link>
 
-				{navContent ?? (
-					<>
-						<div className="flex-1" />
+				<div className="flex-1" />
 
-						<div className="hidden items-center gap-3 md:flex">
+				{/* Desktop: either custom nav slot (e.g. "More from @user" on a post
+				    page) or the default nav with categories, search, user menu. */}
+				<div className="hidden items-center gap-3 md:flex">
+					{navContent ?? (
+						<>
 							<CategoriesDropdown categories={categories} />
 							<SearchBar onSubmit={handleSearch} />
 							{user ? (
@@ -241,86 +258,114 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 									<LoginIcon />
 								</Link>
 							)}
-						</div>
+						</>
+					)}
+				</div>
 
-						<div className="flex flex-1 justify-end md:hidden">
-							<button
-								className="text-brand-mid p-1"
-								onClick={() => setMobileOpen((o) => !o)}
-								aria-label="Toggle menu"
-							>
-								<MenuIcon open={mobileOpen} />
-							</button>
-						</div>
-					</>
-				)}
+				<div className="flex justify-end md:hidden">
+					<button
+						className="text-brand-mid p-1"
+						onClick={() => setMobileOpen((o) => !o)}
+						aria-label="Toggle menu"
+					>
+						<MenuIcon open={mobileOpen} />
+					</button>
+				</div>
 			</div>
 
-			{!navContent && mobileOpen && (
-				<div className="border-brand-border bg-brand-cream flex flex-col gap-4 border-t px-6 py-4 md:hidden">
-					{categories.length > 0 && (
-						<div className="flex flex-col gap-2">
-							<p className="text-brand-mid text-xs font-medium tracking-wide uppercase">
-								Categories
-							</p>
-							{categories.map((cat) => (
-								<Link
-									key={cat.id}
-									to="/category/$name"
-									params={{ name: cat.slug }}
-									className="text-brand-mid text-sm"
-									onClick={() => setMobileOpen(false)}
-								>
-									{cat.name}
-								</Link>
-							))}
+			{mobileOpen && (
+				<div className="border-brand-border bg-brand-cream flex flex-col border-t md:hidden">
+					{user && (
+						<div className="border-brand-border/60 flex items-center gap-3 border-b px-6 py-4">
+							{user.avatarUrl ? (
+								<img
+									src={user.avatarUrl}
+									alt={user.name}
+									className="h-10 w-10 rounded-full object-cover"
+								/>
+							) : (
+								<div className="bg-brand-dark flex h-10 w-10 items-center justify-center rounded-full font-serif text-base font-semibold text-white">
+									{user.name[0]?.toUpperCase()}
+								</div>
+							)}
+							<div className="min-w-0">
+								<p className="text-brand-dark truncate text-sm font-semibold">{user.name}</p>
+								<p className="text-brand-mid truncate text-xs">@{user.username}</p>
+							</div>
 						</div>
 					)}
-					{user ? (
-						<>
-							<Link
-								to="/blog/$username"
-								params={{ username: user.username }}
-								className="text-brand-mid text-sm"
-								onClick={() => setMobileOpen(false)}
-							>
-								Profile
-							</Link>
-							<Link
-								to="/chat"
-								className="text-brand-mid text-sm"
-								onClick={() => setMobileOpen(false)}
-							>
-								Messages
-							</Link>
-							<Link
-								to="/editor/new"
-								className="text-brand-mid text-sm"
-								onClick={() => setMobileOpen(false)}
-							>
-								Write a post
-							</Link>
-							<button
-								onClick={async () => {
-									setMobileOpen(false);
-									await logout.mutateAsync();
-									navigate({ to: "/" });
-								}}
-								className="text-brand-mid text-left text-sm"
-							>
-								Logout
-							</button>
-						</>
-					) : (
-						<Link
-							to="/login"
-							className="text-brand-mid text-sm"
-							onClick={() => setMobileOpen(false)}
-						>
-							Login
-						</Link>
+
+					<div className="px-6 py-3">
+						<SearchBar onSubmit={handleSearch} variant="block" />
+					</div>
+
+					{categories.length > 0 && (
+						<div className="border-brand-border/60 border-t px-6 py-3">
+							<p className="text-brand-mid mb-2 text-[11px] font-semibold tracking-widest uppercase">
+								Categories
+							</p>
+							<div className="grid grid-cols-2 gap-x-4">
+								{categories.map((cat) => (
+									<Link
+										key={cat.id}
+										to="/category/$name"
+										params={{ name: cat.slug }}
+										className="text-brand-dark hover:text-brand py-2.5 text-sm transition-colors"
+										onClick={() => setMobileOpen(false)}
+									>
+										{cat.name}
+									</Link>
+								))}
+							</div>
+						</div>
 					)}
-					<SearchBar onSubmit={handleSearch} className="w-full" />
+
+					<div className="border-brand-border/60 flex flex-col border-t py-1">
+						{user ? (
+							<>
+								<Link
+									to="/blog/$username"
+									params={{ username: user.username }}
+									className={MOBILE_NAV_LINK_CLASS}
+									onClick={() => setMobileOpen(false)}
+								>
+									Profile
+								</Link>
+								<Link
+									to="/chat"
+									className={MOBILE_NAV_LINK_CLASS}
+									onClick={() => setMobileOpen(false)}
+								>
+									Messages
+								</Link>
+								<Link
+									to="/editor/new"
+									className={MOBILE_NAV_LINK_CLASS}
+									onClick={() => setMobileOpen(false)}
+								>
+									Write a post
+								</Link>
+								<button
+									onClick={async () => {
+										setMobileOpen(false);
+										await logout.mutateAsync();
+										navigate({ to: "/" });
+									}}
+									className="hover:bg-brand-hero w-full px-6 py-3 text-left text-base font-medium text-red-700 transition-colors"
+								>
+									Logout
+								</button>
+							</>
+						) : (
+							<Link
+								to="/login"
+								className={MOBILE_NAV_LINK_CLASS}
+								onClick={() => setMobileOpen(false)}
+							>
+								Login
+							</Link>
+						)}
+					</div>
 				</div>
 			)}
 		</header>

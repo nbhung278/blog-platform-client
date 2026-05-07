@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useConversations, useStartConversation } from "@/hooks/useChat";
 import { useSearchUsers } from "@/hooks/useUsers";
+import { EmptyState, ChatBubbleIcon } from "@/components/ui/EmptyState";
 import type { Conversation } from "@/types";
 
 function formatRelativeTime(iso: string) {
@@ -195,16 +196,21 @@ export default function ConversationList({ activeConversationId }: Props) {
 				<div className="flex-1 overflow-y-auto">
 					{isLoading && <p className="text-brand-mid px-4 py-6 text-center text-sm">Loading…</p>}
 					{!isLoading && conversations.length === 0 && (
-						<div className="px-4 py-10 text-center">
-							<p className="text-brand-mid text-sm">No conversations yet.</p>
-							<button
-								type="button"
-								onClick={() => setShowNewChat(true)}
-								className="text-brand mt-2 text-sm underline"
-							>
-								Start one
-							</button>
-						</div>
+						<EmptyState
+							className="px-6 py-12"
+							icon={<ChatBubbleIcon />}
+							title="No conversations yet"
+							description="Start a chat with someone you follow."
+							action={
+								<button
+									type="button"
+									onClick={() => setShowNewChat(true)}
+									className="bg-brand-dark hover:bg-brand-mid rounded-full px-4 py-2 text-sm font-medium text-white transition-colors"
+								>
+									Find people
+								</button>
+							}
+						/>
 					)}
 					{conversations.map((conv) => (
 						<ConversationItem key={conv.id} conv={conv} active={conv.id === activeConversationId} />

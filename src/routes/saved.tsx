@@ -32,7 +32,7 @@ function SavedScreen() {
 				{!isLoading && items.length === 0 && (
 					<div className="border-brand-border rounded-lg border border-dashed bg-white px-6 py-16 text-center">
 						<Bookmark className="mx-auto mb-4 h-10 w-10 text-gray-300" />
-						<p className="text-brand-mid">You haven't saved any posts yet.</p>
+						<p className="text-brand-mid">You haven’t saved any posts yet.</p>
 						<Link
 							to="/"
 							className="text-brand-mid hover:text-brand-dark mt-3 inline-block text-sm underline-offset-2 hover:underline"

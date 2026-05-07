@@ -6,6 +6,35 @@
 	summary {
 		cursor: pointer;
 	}
+
+	/* Visible focus ring for keyboard users on every interactive element. The
+	   browser default ring varies and is often invisible on our cream/dark
+	   palette — pin it to the brand accent so tab order is always traceable. */
+	a:focus-visible,
+	button:focus-visible,
+	[role="button"]:focus-visible,
+	input:focus-visible,
+	textarea:focus-visible,
+	select:focus-visible,
+	summary:focus-visible {
+		outline: 2px solid var(--color-brand);
+		outline-offset: 2px;
+		border-radius: 4px;
+	}
+}
+
+/* Honor user preference: animations on this site are decorative (clap float,
+   comment flash, smooth scroll). When the OS asks to reduce motion we collapse
+   them to instant transitions instead of removing them outright. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
 /* Tiptap editor content styling */
@@ -244,8 +273,15 @@
 	font-family: var(--font-reading);
 	line-height: 1.75;
 	color: rgb(31 41 55);
-	font-size: 1.125rem;
+	/* Slightly smaller body on phones — viewport is closer to the reader and
+	   line-length narrower, so 17px reads better than 18px. Scales up on tablets. */
+	font-size: 1.0625rem;
 	letter-spacing: -0.003em;
+}
+@media (min-width: 640px) {
+	.post-content {
+		font-size: 1.125rem;
+	}
 }
 .post-title {
 	font-family: var(--font-reading);
@@ -339,10 +375,16 @@
 /* Drop cap on first paragraph of article */
 .post-content > p:first-of-type::first-letter {
 	font-family: var(--font-reading);
-	font-size: 4.5em;
+	/* Smaller on phones so the cap doesn't eat half the viewport. */
+	font-size: 3em;
 	font-weight: 700;
 	float: left;
 	line-height: 0.75;
 	margin: 0.05em 0.1em -0.1em 0;
-	color: #1a1a1a;
+	color: rgb(31 41 55);
+}
+@media (min-width: 640px) {
+	.post-content > p:first-of-type::first-letter {
+		font-size: 4.5em;
+	}
 }

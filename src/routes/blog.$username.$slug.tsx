@@ -168,7 +168,7 @@ export default function BlogPostPage() {
 					<Link
 						to="/blog/$username"
 						params={{ username }}
-						className="text-brand-mid hover:text-brand-dark text-sm transition-colors"
+						className="text-brand-mid hover:text-brand-dark hidden text-sm transition-colors md:inline"
 					>
 						More from @{username} →
 					</Link>
@@ -177,20 +177,20 @@ export default function BlogPostPage() {
 
 			{/* Cover image */}
 			{safeCoverUrl && (
-				<div className="mx-auto max-w-7xl px-6 pt-10">
+				<div className="mx-auto max-w-7xl px-5 pt-10 md:px-6">
 					<img
 						src={safeCoverUrl}
 						alt=""
 						loading="eager"
 						decoding="async"
 						fetchPriority="high"
-						className="aspect-21/9 w-full rounded object-cover"
+						className="aspect-video w-full rounded object-cover md:aspect-21/9"
 					/>
 				</div>
 			)}
 
 			{/* Content + Sidebar */}
-			<div className="mx-auto max-w-7xl px-6 py-12">
+			<div className="mx-auto max-w-7xl px-5 py-12 md:px-6">
 				<div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,720px)_300px] lg:justify-between">
 					{/* Article */}
 					<article className="flex min-h-[60vh] w-full min-w-0 flex-col">
@@ -256,8 +256,7 @@ export default function BlogPostPage() {
 						/>
 					</article>
 
-					{/* Sidebar */}
-					<aside className="flex flex-col gap-8 lg:sticky lg:top-24 lg:self-start">
+					<aside className="hidden flex-col gap-8 lg:sticky lg:top-24 lg:flex lg:self-start">
 						{post.tags.length > 0 && (
 							<SidebarSection title="Category">
 								<div className="flex flex-wrap gap-2">
@@ -307,7 +306,7 @@ export default function BlogPostPage() {
 
 						<SidebarSection title="Sign up for Updates">
 							{subscribed ? (
-								<p className="text-sm text-gray-600">Thanks for subscribing! We'll be in touch.</p>
+								<p className="text-sm text-gray-600">Thanks for subscribing! We’ll be in touch.</p>
 							) : (
 								<form
 									onSubmit={(e) => {
@@ -318,6 +317,8 @@ export default function BlogPostPage() {
 								>
 									<input
 										type="email"
+										name="email"
+										autoComplete="email"
 										placeholder="Enter your email"
 										value={email}
 										onChange={(e) => setEmail(e.target.value)}
@@ -345,6 +346,19 @@ export default function BlogPostPage() {
 						)}
 					</aside>
 				</div>
+
+				{/* Mobile-only recent articles — surfaces follow-up reading without
+				    cramming the desktop sidebar into the reading column. */}
+				{recentPosts.length > 0 && (
+					<section className="border-brand-border mt-12 border-t pt-8 lg:hidden">
+						<h2 className="text-brand-dark mb-5 font-serif text-xl font-bold">Recent articles</h2>
+						<div className="flex flex-col gap-6">
+							{recentPosts.map((p) => (
+								<SidebarRecentCard key={p.id} post={p} />
+							))}
+						</div>
+					</section>
+				)}
 			</div>
 
 			<SiteFooter />

@@ -10,6 +10,7 @@ import {
 } from "@/hooks/useChat";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
+import { EmptyState, ChatBubbleIcon } from "@/components/ui/EmptyState";
 import type { DirectMessage, ReactionEmoji } from "@/types";
 
 const GROUP_GAP_MS = 5 * 60 * 1000; // 5 minutes
@@ -195,8 +196,7 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 
 	return (
 		<div className="flex h-full flex-col">
-			{/* Header */}
-			<div className="border-brand-border bg-brand-cream flex items-center gap-3 border-b px-4 py-3">
+			<div className="border-brand-border bg-brand-cream hidden items-center gap-3 border-b px-4 py-3 md:flex">
 				<span className="text-brand-dark font-serif font-semibold">{otherName}</span>
 			</div>
 
@@ -222,8 +222,12 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 				)}
 
 				{!isLoading && allMessages.length === 0 && (
-					<div className="flex flex-1 items-center justify-center">
-						<p className="text-brand-mid text-sm">Say hi to {otherName}!</p>
+					<div className="flex flex-1 items-center justify-center px-6">
+						<EmptyState
+							icon={<ChatBubbleIcon />}
+							title={`Say hi to ${otherName}`}
+							description="This is the start of your conversation. Write a message below to break the ice."
+						/>
 					</div>
 				)}
 

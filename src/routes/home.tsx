@@ -21,8 +21,8 @@ export default function HomePage() {
 			<SiteHeader />
 
 			{/* Hero — cream section with stamp logo */}
-			<section className="bg-brand-hero flex min-h-[420px] items-center justify-center pt-16 pb-44">
-				<div className="bg-brand-dark relative flex h-40 w-40 items-center justify-center rounded-full">
+			<section className="bg-brand-hero flex min-h-[260px] items-center justify-center pt-10 pb-32 md:min-h-[420px] md:pt-16 md:pb-44">
+				<div className="bg-brand-dark relative flex h-32 w-32 items-center justify-center rounded-full md:h-40 md:w-40">
 					<svg className="absolute inset-0 h-full w-full" viewBox="0 0 160 160" fill="none">
 						<circle
 							cx="80"
@@ -54,14 +54,14 @@ export default function HomePage() {
 
 			{/* Hero post — overlaps cream hero with negative margin */}
 			{heroPost && (
-				<div className="relative z-10 mx-auto -mt-28 max-w-7xl px-6">
+				<div className="relative z-10 mx-auto -mt-20 max-w-7xl px-5 md:-mt-28 md:px-6">
 					<Link
 						to="/blog/$username/$slug"
 						params={{ username: heroPost.user?.username ?? "", slug: heroPost.slug }}
 						className="group bg-brand-surface border-brand-border grid grid-cols-1 overflow-hidden border shadow-lg transition-shadow hover:shadow-xl md:grid-cols-2"
 					>
-						<div className="flex flex-col justify-center p-10 md:p-14">
-							<h2 className="text-brand-dark font-serif text-3xl leading-tight font-bold group-hover:underline md:text-4xl">
+						<div className="flex flex-col justify-center p-6 md:p-14">
+							<h2 className="text-brand-dark font-serif text-2xl leading-tight font-bold group-hover:underline md:text-4xl">
 								{heroPost.title}
 							</h2>
 							{heroPost.excerpt && (
@@ -88,7 +88,7 @@ export default function HomePage() {
 				</div>
 			)}
 
-			<div className="mx-auto w-full max-w-7xl px-6 pt-12 pb-24">
+			<div className="mx-auto w-full max-w-7xl px-5 pt-12 pb-24 md:px-6">
 				{/* Most viewed */}
 				{popularPosts.length > 0 && <MostViewedSection posts={popularPosts} />}
 
