@@ -66,8 +66,9 @@ const searchRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/search",
 	component: SearchPage,
-	validateSearch: (search: Record<string, unknown>) => ({
+	validateSearch: (search: Record<string, unknown>): { q: string; page?: number } => ({
 		q: String(search.q ?? ""),
+		page: search.page !== undefined ? Math.max(Number(search.page) || 1, 1) : undefined,
 	}),
 });
 
@@ -75,6 +76,9 @@ const categoryRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/category/$name",
 	component: CategoryPage,
+	validateSearch: (search: Record<string, unknown>): { page?: number } => ({
+		page: search.page !== undefined ? Math.max(Number(search.page) || 1, 1) : undefined,
+	}),
 });
 
 const notificationsRoute = createRoute({

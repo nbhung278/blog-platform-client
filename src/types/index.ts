@@ -61,6 +61,19 @@ export interface PostsPage {
 	limit: number;
 }
 
+export interface PaginatedPosts {
+	items: Post[];
+	total: number;
+	page: number;
+	limit: number;
+	totalPages: number;
+}
+
+export interface CategorySection {
+	category: { id: string; name: string; slug: string };
+	posts: Post[];
+}
+
 export interface Category {
 	id: string;
 	name: string;

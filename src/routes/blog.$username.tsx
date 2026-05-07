@@ -1,4 +1,5 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { ArrowLeft, Mail } from "lucide-react";
 import { usePublicPosts } from "@/hooks/usePosts";
 import { useAuthStore } from "@/stores/auth.store";
 import FeaturedCard from "@/components/blog/FeaturedCard";
@@ -7,13 +8,24 @@ import FollowButton from "@/components/blog/FollowButton";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import { useFollowStats } from "@/hooks/useFollows";
+import { useStartConversation } from "@/hooks/useChat";
 import { safeImageUrl } from "@/lib/sanitize";
 
 export default function BlogUserPage() {
 	const { username } = useParams({ strict: false }) as { username: string };
 	const { data: posts, isLoading, isError } = usePublicPosts(username);
 	const me = useAuthStore((s) => s.user);
+	const navigate = useNavigate();
+	const startConversation = useStartConversation();
 	const isOwner = !!me && me.username === username;
+	const authorId = posts?.[0]?.user?.id;
+	const canMessage = !!me && !isOwner && !!authorId;
+
+	async function handleMessage() {
+		if (!authorId) return;
+		const conv = await startConversation.mutateAsync(authorId);
+		navigate({ to: "/chat/$conversationId", params: { conversationId: conv.id } });
+	}
 
 	// For the owner we use the auth store (always up to date after edits).
 	// For visitors we fall back to the post author field or fetch a public profile.
@@ -52,16 +64,16 @@ export default function BlogUserPage() {
 			<div className="mx-auto max-w-7xl px-6 py-12">
 				<div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[280px_minmax(0,900px)] lg:justify-between">
 					<aside className="lg:sticky lg:top-28 lg:self-start">
-						<div className="bg-brand-surface border-brand-border border p-6">
+						<div className="bg-brand-surface border-brand-border rounded-2xl border p-6 shadow-sm">
 							<div className="flex justify-center">
 								{displayAvatar ? (
 									<img
 										src={displayAvatar}
 										alt={displayName}
-										className="border-brand-border h-24 w-24 rounded-full border-2 object-cover"
+										className="ring-brand-hero h-24 w-24 rounded-full object-cover ring-4 ring-offset-2 ring-offset-white"
 									/>
 								) : (
-									<div className="bg-brand-dark flex h-24 w-24 items-center justify-center rounded-full font-serif text-3xl font-bold text-white">
+									<div className="bg-brand-dark ring-brand-hero flex h-24 w-24 items-center justify-center rounded-full font-serif text-3xl font-bold text-white ring-4 ring-offset-2 ring-offset-white">
 										{initial}
 									</div>
 								)}
@@ -78,44 +90,57 @@ export default function BlogUserPage() {
 								</p>
 							)}
 
-							<div className="border-brand-border my-5 border-t" />
-
-							<div className="space-y-3">
-								<Stat label="Published" value={published.length} />
-								{stats && <Stat label="Followers" value={stats.followers} />}
-								{stats && <Stat label="Following" value={stats.following} />}
-								{isOwner && pending.length > 0 && <Stat label="Pending" value={pending.length} />}
-								{isOwner && drafts.length > 0 && <Stat label="Drafts" value={drafts.length} />}
+							<div className="bg-brand-hero divide-brand-border/60 mt-5 grid grid-cols-3 divide-x overflow-hidden rounded-xl">
+								<StatCell label="Posts" value={published.length} />
+								<StatCell label="Followers" value={stats?.followers ?? 0} />
+								<StatCell label="Following" value={stats?.following ?? 0} />
 							</div>
 
-							{!isOwner && (
-								<div className="mt-5 flex justify-center">
-									<FollowButton username={username} />
+							{isOwner && (pending.length > 0 || drafts.length > 0) && (
+								<div className="text-brand-mid mt-3 flex justify-center gap-4 text-xs">
+									{pending.length > 0 && <span>{pending.length} pending</span>}
+									{drafts.length > 0 && <span>{drafts.length} drafts</span>}
 								</div>
 							)}
 
-							<div className="border-brand-border my-5 border-t" />
-
 							{isOwner ? (
-								<div className="space-y-2">
+								<div className="mt-5 space-y-2">
 									<Link
 										to="/editor/new"
-										className="bg-brand-dark hover:bg-brand-mid block w-full py-2 text-center text-sm text-white transition-colors"
+										className="bg-brand-dark hover:bg-brand-mid block w-full rounded-full py-2 text-center text-sm font-medium text-white transition-colors"
 									>
 										+ New post
 									</Link>
 									<Link
 										to="/settings/profile"
-										className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark block w-full border py-2 text-center text-sm transition-colors"
+										className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark block w-full rounded-full border py-2 text-center text-sm transition-colors"
 									>
 										Edit profile
 									</Link>
 								</div>
 							) : (
+								<div className="mt-5 flex items-center justify-center gap-2">
+									<FollowButton username={username} />
+									{canMessage && (
+										<button
+											onClick={handleMessage}
+											disabled={startConversation.isPending}
+											aria-label="Send message"
+											title="Send message"
+											className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark flex h-9 w-9 items-center justify-center rounded-full border bg-white transition-colors disabled:opacity-60"
+										>
+											<Mail className="h-4 w-4" />
+										</button>
+									)}
+								</div>
+							)}
+
+							{!isOwner && (
 								<Link
 									to="/"
-									className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark block w-full border py-2 text-center text-sm transition-colors"
+									className="text-brand-mid hover:text-brand-dark mt-5 flex items-center justify-center gap-1.5 text-xs transition-colors"
 								>
+									<ArrowLeft className="h-3 w-3" />
 									Explore all posts
 								</Link>
 							)}
@@ -213,11 +238,11 @@ export default function BlogUserPage() {
 	);
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function StatCell({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="flex items-baseline justify-between">
-			<span className="text-brand-mid text-xs tracking-widest uppercase">{label}</span>
-			<span className="text-brand-dark font-serif text-2xl font-bold">{value}</span>
+		<div className="flex flex-col items-center px-2 py-3">
+			<span className="text-brand-dark font-serif text-xl font-bold">{value}</span>
+			<span className="text-brand-mid mt-0.5 text-[9px] tracking-widest uppercase">{label}</span>
 		</div>
 	);
 }

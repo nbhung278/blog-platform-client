@@ -212,23 +212,29 @@ export default function BlogPostPage() {
 						</h1>
 
 						<div className="mt-6 flex items-center gap-3">
-							{authorAvatar ? (
-								<img
-									src={authorAvatar}
-									alt={post.user?.name ?? ""}
-									className="h-10 w-10 rounded-full object-cover"
-								/>
-							) : (
-								<div className="bg-brand-hero text-brand-dark flex h-10 w-10 items-center justify-center rounded-full font-semibold">
-									{(post.user?.name ?? "?")[0].toUpperCase()}
+							<Link
+								to="/blog/$username"
+								params={{ username }}
+								className="group flex min-w-0 flex-1 items-center gap-3"
+							>
+								{authorAvatar ? (
+									<img
+										src={authorAvatar}
+										alt={post.user?.name ?? ""}
+										className="h-10 w-10 shrink-0 rounded-full object-cover"
+									/>
+								) : (
+									<div className="bg-brand-hero text-brand-dark flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold">
+										{(post.user?.name ?? "?")[0].toUpperCase()}
+									</div>
+								)}
+								<div className="min-w-0 flex-1">
+									<p className="truncate text-sm font-semibold text-gray-800 group-hover:underline">
+										By {post.user?.name ?? username}
+									</p>
+									<p className="text-xs text-gray-400">{formatDate(date)}</p>
 								</div>
-							)}
-							<div className="min-w-0 flex-1">
-								<p className="truncate text-sm font-semibold text-gray-800">
-									By {post.user?.name ?? username}
-								</p>
-								<p className="text-xs text-gray-400">{formatDate(date)}</p>
-							</div>
+							</Link>
 							<FollowButton username={username} />
 						</div>
 

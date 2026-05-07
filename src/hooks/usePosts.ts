@@ -1,6 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { Category, Post, PostInput, PostsPage } from "@/types";
+import type {
+	CategorySection,
+	Category,
+	PaginatedPosts,
+	Post,
+	PostInput,
+	PostsPage,
+} from "@/types";
+
+export const MIN_SEARCH_QUERY_LENGTH = 3;
 
 export function useMyPosts() {
 	return useQuery({
@@ -102,29 +111,60 @@ export function useUpdatePost() {
 	});
 }
 
-export function useSearchPosts(q: string) {
+export function useSearchPosts(q: string, page = 1, limit = 12) {
+	const trimmed = q.trim();
+	const longEnough = trimmed.length >= MIN_SEARCH_QUERY_LENGTH;
 	return useQuery({
-		queryKey: ["search", q],
+		queryKey: ["search", trimmed, page, limit],
 		queryFn: async () => {
-			const res = await api.get<{ items: Post[]; total: number }>(
-				`/posts/search?q=${encodeURIComponent(q)}`,
+			const res = await api.get<PaginatedPosts>(
+				`/posts/search?q=${encodeURIComponent(trimmed)}&page=${page}&limit=${limit}`,
 			);
 			return res.data;
 		},
-		enabled: !!q.trim(),
+		enabled: longEnough,
 	});
 }
 
-export function usePostsByCategory(slug: string) {
+export function usePostsByCategory(slug: string, page = 1, limit = 12) {
 	return useQuery({
-		queryKey: ["posts-by-category", slug],
+		queryKey: ["posts-by-category", slug, page, limit],
 		queryFn: async () => {
-			const res = await api.get<{ items: Post[]; total: number }>(
-				`/posts/search?category=${encodeURIComponent(slug)}`,
+			const res = await api.get<PaginatedPosts>(
+				`/posts/search?category=${encodeURIComponent(slug)}&page=${page}&limit=${limit}`,
 			);
 			return res.data;
 		},
 		enabled: !!slug.trim(),
+		placeholderData: (prev) => prev,
+	});
+}
+
+export function usePostsByCategories(
+	perCategory = 4,
+	maxCategories = 6,
+	sort: "popular" | "recent" = "popular",
+) {
+	return useQuery({
+		queryKey: ["posts-by-categories", perCategory, maxCategories, sort],
+		queryFn: async () => {
+			const res = await api.get<{ sections: CategorySection[] }>(
+				`/posts/by-categories?perCategory=${perCategory}&maxCategories=${maxCategories}&sort=${sort}`,
+			);
+			return res.data;
+		},
+		staleTime: 60_000,
+	});
+}
+
+export function useMostViewedPosts(limit = 4) {
+	return useQuery({
+		queryKey: ["most-viewed", limit],
+		queryFn: async () => {
+			const res = await api.get<{ items: Post[] }>(`/posts/most-viewed?limit=${limit}`);
+			return res.data;
+		},
+		staleTime: 60_000,
 	});
 }
 
