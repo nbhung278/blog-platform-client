@@ -16,6 +16,9 @@ import type { PostStatus } from "@/types";
 const INPUT_CLASS =
 	"w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
+// Mirrors the backend cap in posts.ts; keep them in sync.
+const MAX_CATEGORIES = 3;
+
 export default function EditorPage() {
 	const params = useParams({ strict: false }) as Record<string, string>;
 	const paramPostId = params.postId;
@@ -78,7 +81,8 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	}
 
 	const titleInvalid = title.trim().length === 0;
-	const categoryInvalid = selectedCategoryIds.length === 0;
+	const categoryInvalid =
+		selectedCategoryIds.length === 0 || selectedCategoryIds.length > MAX_CATEGORIES;
 	const contentInvalid = contentHtml.trim().length === 0 || contentHtml === "<p></p>";
 	const formInvalid = titleInvalid || categoryInvalid || contentInvalid;
 	const submitting = createPost.isPending || updatePost.isPending;
@@ -312,9 +316,15 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 						</section>
 
 						<section className="border-brand-border bg-brand-cream space-y-2 rounded-xl border p-4">
-							<h2 className="text-brand-dark font-serif text-lg font-semibold">
-								Categories <span className="text-red-600">*</span>
-							</h2>
+							<div className="flex items-baseline justify-between gap-2">
+								<h2 className="text-brand-dark font-serif text-lg font-semibold">
+									Categories <span className="text-red-600">*</span>
+								</h2>
+								<span className="text-brand-mid text-xs">
+									{selectedCategoryIds.length}/{MAX_CATEGORIES}
+								</span>
+							</div>
+							<p className="text-brand-mid text-xs">Pick up to {MAX_CATEGORIES}.</p>
 							{categoriesQuery.isLoading && <p className="text-brand-mid text-xs">Loading...</p>}
 							{categoriesQuery.data?.length === 0 && (
 								<p className="text-brand-mid text-xs">No categories yet</p>
@@ -322,14 +332,21 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 							<div className="max-h-52 space-y-1.5 overflow-y-auto pr-1">
 								{categoriesQuery.data?.map((cat) => {
 									const checked = selectedCategoryIds.includes(cat.id);
+									const atLimit = selectedCategoryIds.length >= MAX_CATEGORIES;
+									const disabled = !checked && atLimit;
 									return (
 										<label
 											key={cat.id}
-											className="hover:bg-brand-hero/60 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+											className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm ${
+												disabled
+													? "cursor-not-allowed opacity-50"
+													: "hover:bg-brand-hero/60 cursor-pointer"
+											}`}
 										>
 											<input
 												type="checkbox"
 												checked={checked}
+												disabled={disabled}
 												onChange={() =>
 													setSelectedCategoryIds((prev) =>
 														checked ? prev.filter((id) => id !== cat.id) : [...prev, cat.id],
@@ -342,8 +359,11 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 									);
 								})}
 							</div>
-							{categoryInvalid && (
+							{selectedCategoryIds.length === 0 && (
 								<p className="text-xs text-red-600">Pick at least one category.</p>
+							)}
+							{selectedCategoryIds.length > MAX_CATEGORIES && (
+								<p className="text-xs text-red-600">Pick at most {MAX_CATEGORIES} categories.</p>
 							)}
 						</section>
 
