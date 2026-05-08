@@ -138,7 +138,13 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 		} catch (err) {
 			const apiErr = err as ApiError;
 			const code = apiErr.response?.status;
-			if (code === 409 || code === 401 || code === 403) return;
+			if (code === 409) {
+				notify.error(
+					"This post was modified elsewhere. Reload the page to get the latest version before saving.",
+				);
+				return;
+			}
+			if (code === 401 || code === 403) return;
 			notify.error(formatApiError(apiErr));
 		}
 	}
