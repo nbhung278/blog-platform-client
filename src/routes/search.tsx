@@ -5,6 +5,7 @@ import { Mail, MoreHorizontal, UserPlus, UserRound } from "lucide-react";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import FeaturedCard from "@/components/blog/FeaturedCard";
+import PostCardSkeleton from "@/components/blog/PostCardSkeleton";
 import { useSearchPosts, MIN_SEARCH_QUERY_LENGTH } from "@/hooks/usePosts";
 import Pagination from "@/components/ui/Pagination";
 import { usePaginationNav } from "@/hooks/usePaginationNav";
@@ -213,6 +214,18 @@ export default function SearchPage() {
 					<p className="text-brand-mid py-10 text-center">
 						No results for "{trimmedQ}". Try a different name, title, or tag.
 					</p>
+				)}
+
+				{/* Loading skeleton — only when first searching with no prior results */}
+				{!queryTooShort && isLoading && totalResults === 0 && trimmedQ && (
+					<section role="status" aria-label="Searching">
+						<div className="bg-brand-border/40 mb-4 h-6 w-20 animate-pulse rounded" />
+						<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+							{Array.from({ length: 6 }).map((_, i) => (
+								<PostCardSkeleton key={i} />
+							))}
+						</div>
+					</section>
 				)}
 
 				{/* People */}

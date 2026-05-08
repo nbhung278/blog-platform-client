@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useConversations, useStartConversation } from "@/hooks/useChat";
 import { useSearchUsers } from "@/hooks/useUsers";
 import { EmptyState, ChatBubbleIcon } from "@/components/ui/EmptyState";
+import ConversationItemSkeleton from "@/components/chat/ConversationItemSkeleton";
 import type { Conversation } from "@/types";
 
 function formatRelativeTime(iso: string) {
@@ -194,7 +195,13 @@ export default function ConversationList({ activeConversationId }: Props) {
 
 				{/* List */}
 				<div className="flex-1 overflow-y-auto">
-					{isLoading && <p className="text-brand-mid px-4 py-6 text-center text-sm">Loading…</p>}
+					{isLoading && (
+						<div role="status" aria-label="Loading conversations">
+							{Array.from({ length: 5 }).map((_, i) => (
+								<ConversationItemSkeleton key={i} />
+							))}
+						</div>
+					)}
 					{!isLoading && conversations.length === 0 && (
 						<EmptyState
 							className="px-6 py-12"

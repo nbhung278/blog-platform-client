@@ -10,6 +10,7 @@ import FollowButton from "@/components/blog/FollowButton";
 import PostActionBar from "@/components/blog/PostActionBar";
 import CommentDrawer from "@/components/blog/CommentDrawer";
 import ShareModal from "@/components/blog/ShareModal";
+import PostDetailSkeleton from "@/components/blog/PostDetailSkeleton";
 import { useComments } from "@/hooks/useComments";
 
 function setMeta(nameOrProp: string, content: string) {
@@ -136,8 +137,10 @@ export default function BlogPostPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex min-h-screen items-center justify-center font-sans text-gray-400">
-				Loading…
+			<div className="flex min-h-screen flex-col bg-white font-sans">
+				<SiteHeader />
+				<PostDetailSkeleton />
+				<SiteFooter />
 			</div>
 		);
 	}

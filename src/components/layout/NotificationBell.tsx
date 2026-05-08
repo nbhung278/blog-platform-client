@@ -10,6 +10,7 @@ import {
 import { useAuthStore } from "@/stores/auth.store";
 import { safeImageUrl } from "@/lib/sanitize";
 import { describeNotification } from "@/lib/notificationDescribe";
+import NotificationItemSkeleton from "@/components/layout/NotificationItemSkeleton";
 
 export default function NotificationBell() {
 	const [open, setOpen] = useState(false);
@@ -69,7 +70,13 @@ export default function NotificationBell() {
 					</div>
 
 					<div className="max-h-[400px] overflow-y-auto">
-						{isLoading && <p className="text-brand-mid px-4 py-6 text-center text-sm">Loading…</p>}
+						{isLoading && (
+							<div role="status" aria-label="Loading notifications">
+								{Array.from({ length: 4 }).map((_, i) => (
+									<NotificationItemSkeleton key={i} />
+								))}
+							</div>
+						)}
 						{!isLoading && items.length === 0 && (
 							<p className="text-brand-mid px-4 py-6 text-center text-sm">No notifications yet</p>
 						)}

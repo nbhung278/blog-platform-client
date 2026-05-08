@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import FeaturedCard from "@/components/blog/FeaturedCard";
+import PostCardSkeleton from "@/components/blog/PostCardSkeleton";
 import Pagination from "@/components/ui/Pagination";
 import { usePostsByCategory } from "@/hooks/usePosts";
 import { usePaginationNav } from "@/hooks/usePaginationNav";
@@ -48,15 +49,13 @@ export default function CategoryPage() {
 				{isError && <p className="py-10 text-center text-red-500">Failed to load posts.</p>}
 
 				{isLoading && !data && (
-					<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+					<div
+						role="status"
+						aria-label="Loading posts"
+						className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+					>
 						{Array.from({ length: PAGE_LIMIT }).map((_, i) => (
-							<div key={i} className="border-brand-border bg-brand-surface animate-pulse border">
-								<div className="bg-brand-hero aspect-video w-full" />
-								<div className="space-y-3 p-6">
-									<div className="bg-brand-hero h-4 w-3/4 rounded" />
-									<div className="bg-brand-hero h-3 w-full rounded" />
-								</div>
-							</div>
+							<PostCardSkeleton key={i} />
 						))}
 					</div>
 				)}

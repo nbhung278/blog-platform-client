@@ -9,6 +9,7 @@ import {
 	useDeleteMessage,
 } from "@/hooks/useChat";
 import MessageBubble from "./MessageBubble";
+import MessageBubbleSkeleton from "./MessageBubbleSkeleton";
 import MessageInput from "./MessageInput";
 import { EmptyState, ChatBubbleIcon } from "@/components/ui/EmptyState";
 import type { DirectMessage, ReactionEmoji } from "@/types";
@@ -215,11 +216,7 @@ export default function MessageThread({ conversationId, otherName }: Props) {
 					)}
 				</div>
 
-				{isLoading && (
-					<div className="flex flex-1 items-center justify-center">
-						<span className="text-brand-mid text-sm">Loading messages…</span>
-					</div>
-				)}
+				{isLoading && <MessageBubbleSkeleton />}
 
 				{!isLoading && allMessages.length === 0 && (
 					<div className="flex flex-1 items-center justify-center px-6">

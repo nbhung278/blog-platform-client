@@ -4,6 +4,8 @@ import { useFeed, useMostViewedPosts, usePostsByCategories } from "@/hooks/usePo
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import FeaturedCard from "@/components/blog/FeaturedCard";
+import HeroPostSkeleton from "@/components/blog/HeroPostSkeleton";
+import PostCardSkeleton from "@/components/blog/PostCardSkeleton";
 import PostMeta from "@/components/blog/PostMeta";
 import type { CategorySection, Post } from "@/types";
 
@@ -43,9 +45,7 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{feedLoading && (
-				<div className="text-brand-mid flex items-center justify-center py-20">Loading…</div>
-			)}
+			{feedLoading && !heroPost && <HeroPostSkeleton />}
 			{feedError && (
 				<div className="flex items-center justify-center py-20 text-red-500">
 					Failed to load posts.
@@ -93,21 +93,21 @@ export default function HomePage() {
 				{popularPosts.length > 0 && <MostViewedSection posts={popularPosts} />}
 
 				{/* Categories */}
-				{catsLoading && !byCats && (
-					<div className="text-brand-mid flex items-center justify-center py-12 text-sm">
-						Loading categories…
-					</div>
-				)}
+				{catsLoading && !byCats && <CategorySectionSkeleton />}
 
 				{sections.map((section) => (
 					<CategorySectionBlock key={section.category.id} section={section} />
 				))}
 
-				{!feedLoading && !heroPost && popularPosts.length === 0 && sections.length === 0 && (
-					<div className="py-24 text-center">
-						<p className="text-brand-mid font-serif text-2xl">No posts published yet.</p>
-					</div>
-				)}
+				{!feedLoading &&
+					!feedError &&
+					!heroPost &&
+					popularPosts.length === 0 &&
+					sections.length === 0 && (
+						<div className="py-24 text-center">
+							<p className="text-brand-mid font-serif text-2xl">No posts published yet.</p>
+						</div>
+					)}
 			</div>
 
 			<SiteFooter />
@@ -153,6 +153,21 @@ function CategorySectionBlock({ section }: { section: CategorySection }) {
 			<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				{section.posts.map((post) => (
 					<FeaturedCard key={post.id} post={post} />
+				))}
+			</div>
+		</section>
+	);
+}
+
+function CategorySectionSkeleton() {
+	return (
+		<section role="status" aria-label="Loading posts" className="mt-12">
+			<div className="border-brand-border mb-6 border-b pb-3">
+				<div className="bg-brand-border/40 h-8 w-40 animate-pulse rounded" />
+			</div>
+			<div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+				{Array.from({ length: 4 }).map((_, i) => (
+					<PostCardSkeleton key={i} />
 				))}
 			</div>
 		</section>

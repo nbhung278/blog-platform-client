@@ -3,6 +3,7 @@ import { Bookmark, BookmarkX } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
+import SavedPostCardSkeleton from "@/components/blog/SavedPostCardSkeleton";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmark";
 
 export default function SavedPage() {
@@ -27,7 +28,13 @@ function SavedScreen() {
 					<h1 className="text-brand-dark font-serif text-3xl font-bold">Saved posts</h1>
 				</div>
 
-				{isLoading && <p className="text-brand-mid py-10 text-center">Loading…</p>}
+				{isLoading && (
+					<div role="status" aria-label="Loading saved posts" className="flex flex-col gap-6">
+						{Array.from({ length: 3 }).map((_, i) => (
+							<SavedPostCardSkeleton key={i} />
+						))}
+					</div>
+				)}
 
 				{!isLoading && items.length === 0 && (
 					<div className="border-brand-border rounded-lg border border-dashed bg-white px-6 py-16 text-center">

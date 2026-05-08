@@ -3,6 +3,7 @@ import { CheckCheck } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
+import NotificationItemSkeleton from "@/components/layout/NotificationItemSkeleton";
 import {
 	useAllNotifications,
 	useMarkAllRead,
@@ -61,29 +62,38 @@ function NotificationsScreen() {
 					)}
 				</div>
 
-				{query.isLoading && <p className="text-brand-mid py-10 text-center">Loading…</p>}
-				{!query.isLoading && items.length === 0 && (
+				{query.isLoading ? (
+					<div
+						role="status"
+						aria-label="Loading notifications"
+						className="border-brand-border divide-brand-border bg-brand-surface divide-y rounded-lg border"
+					>
+						{Array.from({ length: 5 }).map((_, i) => (
+							<NotificationItemSkeleton key={i} />
+						))}
+					</div>
+				) : items.length === 0 ? (
 					<p className="text-brand-mid py-20 text-center">No notifications yet.</p>
+				) : (
+					<div className="border-brand-border divide-brand-border bg-brand-surface divide-y rounded-lg border">
+						{items.map((n) => (
+							<button
+								key={n.id}
+								onClick={() => handleClick(n)}
+								className={`hover:bg-brand-hero flex w-full items-start gap-3 px-5 py-4 text-left transition-colors ${
+									!n.isRead ? "bg-brand-hero/40" : ""
+								}`}
+							>
+								<Avatar item={n} />
+								<div className="min-w-0 flex-1">
+									<p className="text-brand-dark text-sm leading-snug">{describeNotification(n)}</p>
+									<p className="text-brand-mid mt-0.5 text-xs">{formatRelative(n.createdAt)}</p>
+								</div>
+								{!n.isRead && <span className="bg-brand mt-1.5 h-2 w-2 shrink-0 rounded-full" />}
+							</button>
+						))}
+					</div>
 				)}
-
-				<div className="border-brand-border divide-brand-border bg-brand-surface divide-y rounded-lg border">
-					{items.map((n) => (
-						<button
-							key={n.id}
-							onClick={() => handleClick(n)}
-							className={`hover:bg-brand-hero flex w-full items-start gap-3 px-5 py-4 text-left transition-colors ${
-								!n.isRead ? "bg-brand-hero/40" : ""
-							}`}
-						>
-							<Avatar item={n} />
-							<div className="min-w-0 flex-1">
-								<p className="text-brand-dark text-sm leading-snug">{describeNotification(n)}</p>
-								<p className="text-brand-mid mt-0.5 text-xs">{formatRelative(n.createdAt)}</p>
-							</div>
-							{!n.isRead && <span className="bg-brand mt-1.5 h-2 w-2 shrink-0 rounded-full" />}
-						</button>
-					))}
-				</div>
 
 				{query.hasNextPage && (
 					<div className="mt-6 text-center">

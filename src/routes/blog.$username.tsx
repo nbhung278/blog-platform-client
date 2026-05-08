@@ -3,6 +3,7 @@ import { ArrowLeft, Mail } from "lucide-react";
 import { usePublicPosts } from "@/hooks/usePosts";
 import { useAuthStore } from "@/stores/auth.store";
 import FeaturedCard from "@/components/blog/FeaturedCard";
+import PostCardSkeleton from "@/components/blog/PostCardSkeleton";
 import OwnerCard from "@/components/blog/OwnerCard";
 import FollowButton from "@/components/blog/FollowButton";
 import SiteHeader from "@/components/layout/SiteHeader";
@@ -156,19 +157,13 @@ export default function BlogUserPage() {
 						{isError && <p className="py-10 text-center text-red-500">Failed to load posts.</p>}
 
 						{isLoading && (
-							<div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+							<div
+								role="status"
+								aria-label="Loading posts"
+								className="grid grid-cols-1 gap-6 sm:grid-cols-2"
+							>
 								{Array.from({ length: 4 }).map((_, i) => (
-									<div
-										key={i}
-										className="border-brand-border bg-brand-surface animate-pulse border"
-									>
-										<div className="bg-brand-hero aspect-video w-full" />
-										<div className="space-y-3 p-6">
-											<div className="bg-brand-hero h-4 w-3/4 rounded" />
-											<div className="bg-brand-hero h-3 w-full rounded" />
-											<div className="bg-brand-hero h-3 w-2/3 rounded" />
-										</div>
-									</div>
+									<PostCardSkeleton key={i} />
 								))}
 							</div>
 						)}
