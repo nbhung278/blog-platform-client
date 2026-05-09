@@ -9,6 +9,15 @@
 			content="Strix is a blog about software engineering, code craftsmanship, and the art of building great products."
 		/>
 		<meta name="robots" content="index, follow" />
+		<!--
+			Baseline CSP. frame-ancestors cannot be set via meta — set it at the
+			reverse proxy / CDN in production. connect-src lists both localhost (dev)
+			and the production API so this works in both environments.
+		-->
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' http://localhost:3000 ws://localhost:* https://api.strix-blog.uk wss://api.strix-blog.uk; object-src 'none'; base-uri 'self'; form-action 'self'"
+		/>
 
 		<!-- Open Graph / social sharing defaults (individual pages override these) -->
 		<meta property="og:type" content="website" />
