@@ -83,7 +83,10 @@ export interface Category {
 }
 
 export interface AuthResponse {
-	user: Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl">;
+	user: Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl"> & {
+		hasPassword?: boolean;
+		googleLinked?: boolean;
+	};
 }
 
 export interface AnalyticsStat {

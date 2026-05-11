@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
+import { useAuthStore } from "@/stores/auth.store";
 import type {
 	CategorySection,
 	Category,
@@ -76,6 +77,7 @@ export function usePostById(id: string | undefined) {
 
 export function useCreatePost() {
 	const queryClient = useQueryClient();
+	const username = useAuthStore((s) => s.user?.username);
 
 	return useMutation({
 		mutationFn: async (data: PostInput) => {
@@ -84,13 +86,16 @@ export function useCreatePost() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-			queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+			if (username) {
+				queryClient.invalidateQueries({ queryKey: ["public-posts", username] });
+			}
 		},
 	});
 }
 
 export function useUpdatePost() {
 	const queryClient = useQueryClient();
+	const username = useAuthStore((s) => s.user?.username);
 
 	return useMutation({
 		mutationFn: async ({
@@ -105,7 +110,9 @@ export function useUpdatePost() {
 		},
 		onSuccess: (post) => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-			queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+			if (username) {
+				queryClient.invalidateQueries({ queryKey: ["public-posts", username] });
+			}
 			queryClient.invalidateQueries({ queryKey: ["post-by-id", post.id] });
 		},
 	});
@@ -181,6 +188,7 @@ export function useCategories() {
 
 export function useDeletePost() {
 	const queryClient = useQueryClient();
+	const username = useAuthStore((s) => s.user?.username);
 
 	return useMutation({
 		mutationFn: async (id: string) => {
@@ -188,7 +196,9 @@ export function useDeletePost() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-			queryClient.invalidateQueries({ queryKey: ["public-posts"] });
+			if (username) {
+				queryClient.invalidateQueries({ queryKey: ["public-posts", username] });
+			}
 		},
 	});
 }

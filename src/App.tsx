@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect } from "react";
 import { Outlet } from "@tanstack/react-router";
 import Notify from "@/components/Notify";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useAuthStore } from "@/stores/auth.store";
 
 // Realtime hook is only useful for logged-in users; mount it lazily so its
@@ -18,21 +19,23 @@ export default function App() {
 
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<Suspense
-				fallback={
-					<div className="flex min-h-screen items-center justify-center text-gray-400">
-						Loading…
-					</div>
-				}
-			>
-				<Outlet />
-			</Suspense>
-			{userId && (
-				<Suspense fallback={null}>
-					<RealtimeBridge />
+			<ErrorBoundary>
+				<Suspense
+					fallback={
+						<div className="flex min-h-screen items-center justify-center text-gray-400">
+							Loading…
+						</div>
+					}
+				>
+					<Outlet />
 				</Suspense>
-			)}
-			<Notify />
+				{userId && (
+					<Suspense fallback={null}>
+						<RealtimeBridge />
+					</Suspense>
+				)}
+				<Notify />
+			</ErrorBoundary>
 		</div>
 	);
 }
