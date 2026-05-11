@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth.store";
 import { useUpdateProfile, useChangePassword } from "@/hooks/useUpdateProfile";
+import { useSetPassword } from "@/hooks/useAuth";
 import { formatApiError } from "@/lib/apiErrors";
 import { safeImageUrl } from "@/lib/sanitize";
 import SiteHeader from "@/components/layout/SiteHeader";
@@ -256,8 +257,13 @@ function ProfileSettings() {
 					</form>
 				</section>
 
-				{/* Password form */}
-				<section className="bg-brand-surface border-brand-border border p-8">
+				{/* Password form — show "Set password" for Google-only accounts,
+				    "Change password" for accounts that already have one. */}
+				{user.hasPassword === false ? <SetPasswordSection /> : null}
+				<section
+					className="bg-brand-surface border-brand-border border p-8"
+					hidden={user.hasPassword === false}
+				>
 					<h2 className="text-brand-dark mb-6 font-serif text-xl font-bold">Change password</h2>
 
 					<form onSubmit={handlePasswordSubmit} className="space-y-5">
@@ -362,5 +368,125 @@ function ProfileSettings() {
 
 			<SiteFooter />
 		</div>
+	);
+}
+
+function SetPasswordSection() {
+	const setPassword = useSetPassword();
+	const [newPassword, setNewPassword] = useState("");
+	const [confirm, setConfirm] = useState("");
+	const [success, setSuccess] = useState(false);
+	const [error, setError] = useState("");
+	const refresh = useAuthStore((s) => s.loadMe);
+
+	const rules = [
+		{ label: "12+ characters", met: newPassword.length >= 12 },
+		{ label: "Uppercase letter", met: /[A-Z]/.test(newPassword) },
+		{ label: "Lowercase letter", met: /[a-z]/.test(newPassword) },
+		{ label: "Number", met: /[0-9]/.test(newPassword) },
+	];
+	const passwordOk = rules.every((r) => r.met);
+
+	async function handleSubmit(e: React.FormEvent) {
+		e.preventDefault();
+		setError("");
+		if (newPassword !== confirm) {
+			setError("Passwords do not match");
+			return;
+		}
+		try {
+			await setPassword.mutateAsync({ newPassword });
+			setSuccess(true);
+			setNewPassword("");
+			setConfirm("");
+			// Refresh /me so `hasPassword` flips to true and the section swaps
+			// to "Change password" on the next render.
+			void refresh();
+		} catch (err) {
+			setError(formatApiError(err, "Could not set password"));
+		}
+	}
+
+	return (
+		<section className="bg-brand-surface border-brand-border border p-8">
+			<h2 className="text-brand-dark mb-2 font-serif text-xl font-bold">Set a password</h2>
+			<p className="text-brand-mid mb-6 text-sm">
+				You signed in with Google. Adding a password lets you also sign in with email — useful if
+				you lose access to your Google account.
+			</p>
+
+			<form onSubmit={handleSubmit} className="space-y-5">
+				<div className="space-y-1">
+					<label
+						htmlFor="set-new-password"
+						className="text-brand-mid text-xs font-medium tracking-wide uppercase"
+					>
+						New password
+					</label>
+					<input
+						id="set-new-password"
+						type="password"
+						value={newPassword}
+						onChange={(e) => {
+							setNewPassword(e.target.value);
+							setError("");
+							setSuccess(false);
+						}}
+						className={INPUT_CLASS}
+						required
+						autoComplete="new-password"
+					/>
+					{newPassword.length > 0 && (
+						<ul className="mt-2 space-y-1">
+							{rules.map((r) => (
+								<li key={r.label} className="flex items-center gap-2 text-xs">
+									<span className={r.met ? "text-green-600" : "text-brand-mid"}>
+										{r.met ? "✓" : "○"}
+									</span>
+									<span className={r.met ? "text-green-700" : "text-brand-mid"}>{r.label}</span>
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
+
+				<div className="space-y-1">
+					<label
+						htmlFor="set-confirm-password"
+						className="text-brand-mid text-xs font-medium tracking-wide uppercase"
+					>
+						Confirm password
+					</label>
+					<input
+						id="set-confirm-password"
+						type="password"
+						value={confirm}
+						onChange={(e) => {
+							setConfirm(e.target.value);
+							setError("");
+							setSuccess(false);
+						}}
+						className={INPUT_CLASS}
+						required
+						autoComplete="new-password"
+					/>
+				</div>
+
+				{error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+				{success && (
+					<p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+						Password set. You can now sign in with email + password too.
+					</p>
+				)}
+
+				<button
+					type="submit"
+					disabled={setPassword.isPending || !passwordOk}
+					className="bg-brand-dark hover:bg-brand-mid w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+				>
+					{setPassword.isPending ? "Setting…" : "Set password"}
+				</button>
+			</form>
+		</section>
 	);
 }

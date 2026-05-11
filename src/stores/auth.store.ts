@@ -4,7 +4,10 @@ import { api, invalidateCsrfCache, registerOnAuthLost } from "@/api/client";
 import { CSRF_COOKIE_NAME } from "@/lib/authConstants";
 import type { User } from "@/types";
 
-export type AuthUser = Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl">;
+export type AuthUser = Pick<User, "id" | "email" | "name" | "username" | "bio" | "avatarUrl"> & {
+	hasPassword?: boolean;
+	googleLinked?: boolean;
+};
 
 interface AuthState {
 	user: AuthUser | null;

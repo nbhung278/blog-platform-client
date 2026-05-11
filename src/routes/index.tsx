@@ -3,6 +3,9 @@ import { createRootRoute, createRoute } from "@tanstack/react-router";
 import App from "@/App";
 import LoginPage from "./login";
 import RegisterPage from "./register";
+import ForgotPasswordPage from "./forgot-password";
+import ResetPasswordPage from "./reset-password";
+import GoogleSuccessPage from "./auth.google-success";
 
 const HomePage = lazy(() => import("./home"));
 const EditorPage = lazy(() => import("./editor"));
@@ -36,6 +39,31 @@ const registerRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/register",
 	component: RegisterPage,
+});
+
+const forgotPasswordRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/forgot-password",
+	component: ForgotPasswordPage,
+});
+
+const resetPasswordRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/reset-password",
+	component: ResetPasswordPage,
+	validateSearch: (
+		search: Record<string, unknown>,
+	): { token: string; email: string; dev?: string } => ({
+		token: String(search.token ?? ""),
+		email: String(search.email ?? ""),
+		...(search.dev ? { dev: String(search.dev) } : {}),
+	}),
+});
+
+const googleSuccessRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/auth/google-success",
+	component: GoogleSuccessPage,
 });
 
 const editorRoute = createRoute({
@@ -115,6 +143,9 @@ export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
 	registerRoute,
+	forgotPasswordRoute,
+	resetPasswordRoute,
+	googleSuccessRoute,
 	newPostRoute,
 	editorRoute,
 	blogUserRoute,
