@@ -50,9 +50,11 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 	const [uploadingCover, setUploadingCover] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const hasLoadedRef = useRef(false);
 
 	useEffect(() => {
-		if (mode === "edit" && postQuery.data) {
+		if (mode === "edit" && postQuery.data && !hasLoadedRef.current) {
+			hasLoadedRef.current = true;
 			const p = postQuery.data;
 			setTitle(p.title);
 			setExcerpt(p.excerpt ?? "");
