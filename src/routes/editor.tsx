@@ -16,8 +16,9 @@ import type { PostStatus } from "@/types";
 const INPUT_CLASS =
 	"w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
-// Mirrors the backend cap in posts.ts; keep them in sync.
+// Mirrors the backend caps; keep in sync.
 const MAX_CATEGORIES = 3;
+const MAX_COVER_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export default function EditorPage() {
 	const params = useParams({ strict: false }) as Record<string, string>;
@@ -48,9 +49,17 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	const [status, setStatus] = useState<PostStatus>("draft");
 	const [version, setVersion] = useState(1);
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+	const [pendingCover, setPendingCover] = useState<{ file: File; preview: string } | null>(null);
 	const [uploadingCover, setUploadingCover] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const hasLoadedRef = useRef(false);
+
+	useEffect(() => {
+		const preview = pendingCover?.preview;
+		return () => {
+			if (preview) URL.revokeObjectURL(preview);
+		};
+	}, [pendingCover]);
 
 	useEffect(() => {
 		if (mode === "edit" && postQuery.data && !hasLoadedRef.current) {
@@ -67,27 +76,24 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 		}
 	}, [mode, postQuery.data]);
 
-	async function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+	function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		setUploadingCover(true);
-		try {
-			const { url } = await uploadsApi.uploadImage(file);
-			setCoverUrl(url);
-		} catch {
-			notify.error("Failed to upload cover image");
-		} finally {
-			setUploadingCover(false);
-			if (fileInputRef.current) fileInputRef.current.value = "";
-		}
+		const preview = URL.createObjectURL(file);
+		setPendingCover({ file, preview });
+		setCoverUrl("");
+		if (fileInputRef.current) fileInputRef.current.value = "";
 	}
+
+	const coverTooLarge = !!pendingCover && pendingCover.file.size > MAX_COVER_BYTES;
+	const coverPreview = pendingCover?.preview || coverUrl;
 
 	const titleInvalid = title.trim().length === 0;
 	const categoryInvalid =
 		selectedCategoryIds.length === 0 || selectedCategoryIds.length > MAX_CATEGORIES;
 	const contentInvalid = contentHtml.trim().length === 0 || contentHtml === "<p></p>";
-	const formInvalid = titleInvalid || categoryInvalid || contentInvalid;
-	const submitting = createPost.isPending || updatePost.isPending;
+	const formInvalid = titleInvalid || categoryInvalid || contentInvalid || coverTooLarge;
+	const submitting = createPost.isPending || updatePost.isPending || uploadingCover;
 
 	async function save(nextStatus: PostStatus) {
 		if (formInvalid || !user) return;
@@ -100,17 +106,34 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 			return;
 		}
 
-		// External URL → rehost onto our S3 so the backend allowlist accepts it.
-		// Backend short-circuits when the URL is already on-host.
-		let finalCoverUrl = coverUrl.trim() || null;
-		if (finalCoverUrl) {
+		let finalCoverUrl: string | null = null;
+
+		if (pendingCover) {
+			setUploadingCover(true);
 			try {
-				const { url } = await uploadsApi.uploadFromUrl(finalCoverUrl);
+				const { url } = await uploadsApi.uploadImage(pendingCover.file);
 				finalCoverUrl = url;
-				if (url !== coverUrl.trim()) setCoverUrl(url);
+				setCoverUrl(url);
+				setPendingCover(null);
 			} catch (err) {
-				notify.error(formatApiError(err as ApiError, "Failed to fetch cover image"));
+				notify.error(formatApiError(err as ApiError, "Failed to upload cover image"));
+				setUploadingCover(false);
 				return;
+			}
+			setUploadingCover(false);
+		} else {
+			// External URL → rehost onto our S3 so the backend allowlist accepts it.
+			// Backend short-circuits when the URL is already on-host.
+			finalCoverUrl = coverUrl.trim() || null;
+			if (finalCoverUrl) {
+				try {
+					const { url } = await uploadsApi.uploadFromUrl(finalCoverUrl);
+					finalCoverUrl = url;
+					if (url !== coverUrl.trim()) setCoverUrl(url);
+				} catch (err) {
+					notify.error(formatApiError(err as ApiError, "Failed to fetch cover image"));
+					return;
+				}
 			}
 		}
 
@@ -204,7 +227,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 						<button
 							type="button"
 							onClick={() => save("draft")}
-							disabled={submitting}
+							disabled={submitting || formInvalid}
 							className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors disabled:opacity-60"
 						>
 							<Save className="h-4 w-4" />
@@ -213,7 +236,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 						<button
 							type="button"
 							onClick={() => save("pending")}
-							disabled={submitting}
+							disabled={submitting || formInvalid}
 							className="bg-brand-dark hover:bg-brand-mid flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-white transition-colors disabled:opacity-60"
 						>
 							<Send className="h-4 w-4" />
@@ -265,16 +288,19 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 
 							<div>
 								<label className="text-brand-dark mb-1.5 block text-sm">Cover image</label>
-								{coverUrl && (
+								{coverPreview && (
 									<div className="relative mb-2">
 										<img
-											src={coverUrl}
+											src={coverPreview}
 											alt="Cover preview"
 											className="aspect-video w-full rounded-lg object-cover"
 										/>
 										<button
 											type="button"
-											onClick={() => setCoverUrl("")}
+											onClick={() => {
+												setCoverUrl("");
+												setPendingCover(null);
+											}}
 											className="absolute top-1.5 right-1.5 rounded-full bg-black/55 p-1 text-white hover:bg-black/75"
 											aria-label="Remove cover image"
 										>
@@ -285,18 +311,21 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 								<div className="flex gap-2">
 									<input
 										value={coverUrl}
-										onChange={(e) => setCoverUrl(e.target.value)}
+										onChange={(e) => {
+											setCoverUrl(e.target.value);
+											if (pendingCover) setPendingCover(null);
+										}}
 										placeholder="https://..."
 										className={`${INPUT_CLASS} flex-1 text-xs`}
 									/>
 									<button
 										type="button"
-										disabled={uploadingCover}
+										disabled={submitting}
 										onClick={() => fileInputRef.current?.click()}
 										className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1 rounded-lg border bg-white px-2.5 py-2 text-xs transition-colors disabled:opacity-60"
 									>
 										<Upload className="h-3.5 w-3.5" />
-										{uploadingCover ? "..." : "Upload"}
+										Upload
 									</button>
 								</div>
 								<input
@@ -306,6 +335,13 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 									className="hidden"
 									onChange={handleCoverFileChange}
 								/>
+								{coverTooLarge ? (
+									<p className="mt-1 text-xs text-red-600">File exceeds 10 MB limit.</p>
+								) : (
+									<p className="text-brand-mid mt-1 text-xs">
+										JPEG · PNG · WebP · GIF &nbsp;·&nbsp; max 10 MB
+									</p>
+								)}
 							</div>
 
 							<div>
