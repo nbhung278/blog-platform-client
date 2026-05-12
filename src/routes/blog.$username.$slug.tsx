@@ -69,8 +69,6 @@ export default function BlogPostPage() {
 	};
 	const { data: post, isLoading, isError } = usePost(slug);
 	const { data: feedData } = useFeed(6);
-	const [email, setEmail] = useState("");
-	const [subscribed, setSubscribed] = useState(false);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [shareOpen, setShareOpen] = useState(false);
 
@@ -270,47 +268,6 @@ export default function BlogPostPage() {
 								</div>
 							</SidebarSection>
 						)}
-
-						<SidebarSection title="Share">
-							<button
-								type="button"
-								onClick={() => setShareOpen(true)}
-								className="border-brand-border text-brand-dark hover:bg-brand-hero w-full rounded-lg border bg-white px-3 py-2 text-sm font-medium transition-colors"
-							>
-								Share this post
-							</button>
-						</SidebarSection>
-
-						<SidebarSection title="Sign up for Updates">
-							{subscribed ? (
-								<p className="text-sm text-gray-600">Thanks for subscribing! We’ll be in touch.</p>
-							) : (
-								<form
-									onSubmit={(e) => {
-										e.preventDefault();
-										if (email) setSubscribed(true);
-									}}
-									className="flex overflow-hidden rounded border border-gray-200"
-								>
-									<input
-										type="email"
-										name="email"
-										autoComplete="email"
-										placeholder="Enter your email"
-										value={email}
-										onChange={(e) => setEmail(e.target.value)}
-										required
-										className="flex-1 px-3 py-2 text-sm text-gray-700 placeholder-gray-400 outline-none"
-									/>
-									<button
-										type="submit"
-										className="bg-brand-mid px-3 py-2 text-xs font-semibold tracking-wide text-white transition-opacity hover:opacity-80"
-									>
-										Subscribe
-									</button>
-								</form>
-							)}
-						</SidebarSection>
 
 						{recentPosts.length > 0 && (
 							<SidebarSection title="Recent Articles">
