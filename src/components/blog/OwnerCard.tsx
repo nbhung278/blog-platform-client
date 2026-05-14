@@ -37,6 +37,8 @@ const OwnerCard = memo(function OwnerCard({ post }: { post: Post }) {
 				<img
 					src={post.coverUrl}
 					alt={post.title}
+					width={1200}
+					height={675}
 					loading="lazy"
 					className="aspect-video w-full object-cover"
 				/>

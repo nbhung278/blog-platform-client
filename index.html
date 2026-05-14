@@ -19,7 +19,7 @@
 		-->
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.strix-blog.uk wss://api.strix-blog.uk; object-src 'none'; base-uri 'self'; form-action 'self'"
+			content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.strix-blog.uk wss://api.strix-blog.uk https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'"
 		/>
 
 		<!-- Open Graph / social sharing defaults (individual pages override these) -->
@@ -60,13 +60,13 @@
 		<link rel="alternate" type="application/rss+xml" title="Strix — RSS feed" href="/feed.xml" />
 
 		<!-- Preconnect to origins involved in the critical path so DNS/TLS happens
-         in parallel with HTML parsing instead of being discovered later. -->
+         in parallel with HTML parsing instead of being discovered later.
+         The legacy S3 host (strix-blog-media.s3.*.amazonaws.com) is gone —
+         media now serves from cdn.strix-blog.uk (CloudFront in front of the
+         same bucket), which the browser already preconnects to as a same-site
+         origin via the canonical URL. -->
 		<link rel="preconnect" href="https://api.strix-blog.uk" crossorigin />
-		<link
-			rel="preconnect"
-			href="https://strix-blog-media.s3.ap-southeast-1.amazonaws.com"
-			crossorigin
-		/>
+		<link rel="preconnect" href="https://cdn.strix-blog.uk" crossorigin />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<!--
@@ -76,6 +76,21 @@
 			so we only request roman cuts. Source Serif 4 is variable-axis (opsz),
 			so a single file covers all sizes — we only need to list the weight axis.
 		-->
+		<!--
+			Two-line font load:
+			1. <link rel="preload" as="style"> kicks off the request as soon as
+			   the parser sees this tag — earlier than a plain stylesheet link
+			   would. Using `as=style` matches the credential mode of the second
+			   link, so the browser dedups the request.
+			2. <link rel="stylesheet"> applies the rules when ready. With
+			   `display=swap` on the Google URL, text renders in a fallback
+			   font immediately and swaps when the web font lands — no FOIT.
+			Earlier this used the `media=print; onload=this.media='all'`
+			deferred-stylesheet trick. That inline `onload` violates CSP
+			`script-src 'self'` (no inline event handlers without 'unsafe-hashes'),
+			so we dropped it. The preload above gives us most of the speed
+			benefit without the inline JS.
+		-->
 		<link
 			rel="preload"
 			as="style"
@@ -84,15 +99,7 @@
 		<link
 			rel="stylesheet"
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap"
-			media="print"
-			onload="this.media = 'all'"
 		/>
-		<noscript>
-			<link
-				rel="stylesheet"
-				href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap"
-			/>
-		</noscript>
 	</head>
 	<body>
 		<div id="root"></div>

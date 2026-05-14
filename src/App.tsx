@@ -20,15 +20,25 @@ export default function App() {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<ErrorBoundary>
-				<Suspense
-					fallback={
-						<div className="flex min-h-screen items-center justify-center text-gray-400">
-							Loading…
-						</div>
-					}
-				>
-					<Outlet />
-				</Suspense>
+				{/*
+					<main> landmark for screen readers. Route components render their
+					own <SiteHeader> (a <header>) inside this <main>, which the HTML
+					spec permits — `header` outside a section/article is a banner role,
+					but inside a `main` it's just a section header. The skip-link and
+					ARIA "skip to main" patterns rely on this landmark being present,
+					which Lighthouse flags when missing.
+				*/}
+				<main>
+					<Suspense
+						fallback={
+							<div className="flex min-h-screen items-center justify-center text-gray-400">
+								Loading…
+							</div>
+						}
+					>
+						<Outlet />
+					</Suspense>
+				</main>
 				{userId && (
 					<Suspense fallback={null}>
 						<RealtimeBridge />

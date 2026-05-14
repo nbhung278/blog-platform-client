@@ -75,6 +75,12 @@ export default function HomePage() {
 							<img
 								src={heroPost.coverUrl}
 								alt={heroPost.title}
+								width={1200}
+								height={600}
+								// Hero is above the fold on the landing page → eager-load so
+								// it competes for LCP rather than waiting for the lazy queue.
+								loading="eager"
+								fetchPriority="high"
 								className="h-64 w-full object-cover md:h-auto"
 							/>
 						) : (

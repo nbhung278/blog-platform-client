@@ -13,6 +13,8 @@ const SidebarRecentCard = memo(function SidebarRecentCard({ post }: { post: Post
 				<img
 					src={post.coverUrl}
 					alt={post.title}
+					width={400}
+					height={225}
 					loading="lazy"
 					className="aspect-video w-full rounded object-cover"
 				/>
