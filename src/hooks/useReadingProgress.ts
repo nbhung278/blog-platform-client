@@ -182,8 +182,13 @@ export function useTrackReadingProgress({
 				reachedFloorRef.current = true;
 			}
 
-			// Throttle: meaningful change OR enough time elapsed.
-			if (progressDelta < 0.05 && timeDelta < 15_000) return;
+			// Throttle: only send when BOTH the progress moved meaningfully
+			// (≥5%) AND at least 15s elapsed since the last send. Logical OR
+			// here would fire on every scroll event the moment progress
+			// crossed 5% — `(false && false)` skips, but `(true || false)`
+			// would not. The AND in the skip-condition means we require both
+			// reasons-to-skip to be missing before firing.
+			if (progressDelta < 0.05 || timeDelta < 15_000) return;
 
 			lastSentProgressRef.current = progress;
 			lastSentAtRef.current = now;
