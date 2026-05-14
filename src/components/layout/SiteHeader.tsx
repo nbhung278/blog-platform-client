@@ -6,6 +6,7 @@ import { useCategories } from "@/hooks/usePosts";
 import { useConversations } from "@/hooks/useChat";
 import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
+import { StrixLogo } from "./StrixLogo";
 
 interface SiteHeaderProps {
 	navContent?: ReactNode;
@@ -225,13 +226,17 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 	return (
 		<header className="bg-brand-cream border-brand-border sticky top-0 z-50 border-b">
 			<div className="mx-auto flex max-w-7xl items-end justify-between gap-6 px-5 py-3 md:px-6 md:py-5">
-				<Link to="/" className="flex shrink-0 items-end gap-2.5">
-					<div className="bg-brand flex h-9 items-center justify-center px-2.5">
-						<span className="font-serif text-lg font-bold tracking-wide text-white">
-							<span className="text-2xl">S</span>trix
-						</span>
-					</div>
-					<span className="text-brand-dark font-serif text-lg font-semibold">Code as Craft</span>
+				<Link
+					to="/"
+					className="flex shrink-0 items-center gap-3"
+					aria-label="Strix — Code as Craft"
+				>
+					{/* Wordmark renders at the header's content height. text-brand
+					    drives the SVG color through currentColor. */}
+					<StrixLogo className="text-brand h-10 w-auto md:h-12" />
+					<span className="text-brand-dark hidden font-serif text-base font-medium sm:inline">
+						Code as Craft
+					</span>
 				</Link>
 
 				<div className="flex-1" />

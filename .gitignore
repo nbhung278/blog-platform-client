@@ -15,3 +15,10 @@ coverage/
 # Note: bun.lock (text format) is committed for reproducible installs.
 # Old binary lockfile is ignored:
 bun.lockb
+
+# Generated at deploy time by scripts/deploy-frontend.sh — never commit a
+# stale snapshot. Backend serves the live versions at api.strix-blog.uk and
+# the deploy script bakes a fresh copy into the public/ directory.
+public/sitemap.xml
+public/feed.xml
+public/feed.atom

@@ -9,4 +9,4 @@ Disallow: /chat
 Disallow: /notifications
 Disallow: /saved
 
-Sitemap: /sitemap.xml
+Sitemap: https://strix-blog.uk/sitemap.xml
