@@ -8,6 +8,7 @@ import { safeImageUrl } from "@/lib/sanitize";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import RequireAuth from "@/components/RequireAuth";
+import ReadingPrivacySection from "@/components/blog/ReadingPrivacySection";
 
 const INPUT_CLASS =
 	"w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50";
@@ -256,6 +257,8 @@ function ProfileSettings() {
 						</button>
 					</form>
 				</section>
+
+				<ReadingPrivacySection />
 
 				{/* Password form — show "Set password" for Google-only accounts,
 				    "Change password" for accounts that already have one. */}

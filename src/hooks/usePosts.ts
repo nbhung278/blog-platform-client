@@ -118,6 +118,78 @@ export function useUpdatePost() {
 	});
 }
 
+export interface DraftSummary {
+	id: string;
+	title: string;
+	excerpt: string | null;
+	coverUrl: string | null;
+	updatedAt: string;
+	readingTime: number;
+	wordCount: number;
+}
+
+export function useMyDrafts(limit = 3, enabled = true) {
+	return useQuery({
+		queryKey: ["my-drafts", limit],
+		queryFn: async () => {
+			// Cache-bust with a per-call query param. The browser's HTTP
+			// cache had been serving stale /my-drafts responses (no
+			// Cache-Control header on the backend's legacy version → disk
+			// cache heuristics kicked in). The backend now returns
+			// `Cache-Control: private, no-store`, but until every deployed
+			// region drains that fix we belt-and-brace by making each
+			// request URL unique so the disk cache can't satisfy it.
+			const res = await api.get<{ items: DraftSummary[] }>(
+				`/posts/my-drafts?limit=${limit}&_t=${Date.now()}`,
+			);
+			return res.data.items;
+		},
+		enabled,
+		// Always refetch on mount. The user just came from the editor where
+		// they edited a title/body; even though autosave invalidates this
+		// query, a stale cached snapshot can briefly render before the
+		// background refetch lands. `staleTime: 0` forces a fresh fetch
+		// before showing data so the profile never flashes the old title.
+		staleTime: 0,
+		refetchOnMount: "always",
+	});
+}
+
+// Lightweight autosave. Bypasses optimistic-concurrency + fan-out; backend
+// rejects non-draft posts (HTTP 409) so callers must stop autosaving once the
+// post is published.
+export interface AutosavePayload {
+	title?: string;
+	contentMd?: string;
+	contentHtml?: string;
+	excerpt?: string | null;
+	coverUrl?: string | null;
+	tags?: string[];
+}
+
+export function useAutosavePost() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async ({ id, ...data }: AutosavePayload & { id: string }) => {
+			const res = await api.patch<{ id: string; version: number; updatedAt: string }>(
+				`/posts/${id}/autosave`,
+				data,
+			);
+			return res.data;
+		},
+		onSuccess: (result) => {
+			// Bust the drafts list so "Continue writing" reflects the new updatedAt
+			// (and recently-typed title). The per-post detail query is intentionally
+			// NOT invalidated — the editor owns the source-of-truth state locally
+			// while typing; refetching would clobber unsaved keystrokes.
+			queryClient.invalidateQueries({ queryKey: ["my-drafts"] });
+			queryClient.setQueryData<Post | undefined>(["post-by-id", result.id], (prev) =>
+				prev ? { ...prev, version: result.version, updatedAt: result.updatedAt } : prev,
+			);
+		},
+	});
+}
+
 export function useSearchPosts(q: string, page = 1, limit = 12) {
 	const trimmed = q.trim();
 	const longEnough = trimmed.length >= MIN_SEARCH_QUERY_LENGTH;

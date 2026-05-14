@@ -6,6 +6,7 @@ import FeaturedCard from "@/components/blog/FeaturedCard";
 import PostCardSkeleton from "@/components/blog/PostCardSkeleton";
 import OwnerCard from "@/components/blog/OwnerCard";
 import FollowButton from "@/components/blog/FollowButton";
+import ContinueWritingSection from "@/components/blog/ContinueWritingSection";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import { useFollowStats } from "@/hooks/useFollows";
@@ -220,15 +221,7 @@ export default function BlogUserPage() {
 							</PostSection>
 						)}
 
-						{isOwner && drafts.length > 0 && (
-							<PostSection title="Drafts">
-								<PostGrid>
-									{drafts.map((post) => (
-										<OwnerCard key={post.id} post={post} />
-									))}
-								</PostGrid>
-							</PostSection>
-						)}
+						{isOwner && <ContinueWritingSection />}
 					</main>
 				</div>
 			</div>

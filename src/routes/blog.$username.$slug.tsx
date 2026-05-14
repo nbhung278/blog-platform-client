@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { usePost, useFeed } from "@/hooks/usePosts";
 import { sanitizeHtml, safeImageUrl } from "@/lib/sanitize";
@@ -11,7 +11,9 @@ import PostActionBar from "@/components/blog/PostActionBar";
 import CommentDrawer from "@/components/blog/CommentDrawer";
 import ShareModal from "@/components/blog/ShareModal";
 import PostDetailSkeleton from "@/components/blog/PostDetailSkeleton";
+import ResumeReadingBanner from "@/components/blog/ResumeReadingBanner";
 import { useComments } from "@/hooks/useComments";
+import { useResumeBanner, useTrackReadingProgress } from "@/hooks/useReadingProgress";
 
 function setMeta(nameOrProp: string, content: string) {
 	const isOg = nameOrProp.startsWith("og:") || nameOrProp.startsWith("article:");
@@ -71,6 +73,25 @@ export default function BlogPostPage() {
 	const { data: feedData } = useFeed(6);
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const [shareOpen, setShareOpen] = useState(false);
+
+	// Article ref used to measure the readable content height for scroll
+	// progress. Using a per-element measurement (rather than document height)
+	// keeps progress meaningful even when sticky sidebars / comment drawer
+	// inflate the page below.
+	const articleRef = useRef<HTMLElement | null>(null);
+	const getContentHeight = useCallback(() => {
+		const el = articleRef.current;
+		if (!el) return 0;
+		// Approximate the bottom of readable content: the element's
+		// offsetTop + its scroll height.
+		return el.offsetTop + el.offsetHeight;
+	}, []);
+
+	useTrackReadingProgress({
+		postId: post?.id,
+		getContentHeight,
+	});
+	const resume = useResumeBanner(post?.id);
 
 	// Prefetch comment count alongside the post so the action bar shows the
 	// real number before the drawer is opened. The drawer reuses this query.
@@ -185,11 +206,21 @@ export default function BlogPostPage() {
 				</div>
 			)}
 
+			{resume.show && (
+				<div className="mx-auto w-full max-w-7xl px-5 pt-6 md:px-6">
+					<ResumeReadingBanner
+						progress={resume.progress}
+						onResume={resume.resume}
+						onDismiss={resume.dismiss}
+					/>
+				</div>
+			)}
+
 			{/* Content + Sidebar */}
 			<div className="mx-auto max-w-7xl px-5 py-12 md:px-6">
 				<div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,720px)_300px] lg:justify-between">
 					{/* Article */}
-					<article className="flex min-h-[60vh] w-full min-w-0 flex-col">
+					<article ref={articleRef} className="flex min-h-[60vh] w-full min-w-0 flex-col">
 						{post.tags.length > 0 && (
 							<div className="mb-6 flex flex-wrap gap-2">
 								{post.tags.map((tag) => (

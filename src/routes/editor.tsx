@@ -1,10 +1,12 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Save, Send, Upload, X } from "lucide-react";
 import PostEditor from "@/components/editor/PostEditor";
 import RequireAuth from "@/components/RequireAuth";
+import SaveStatus from "@/components/editor/SaveStatus";
 import { useCategories, useCreatePost, usePostById, useUpdatePost } from "@/hooks/usePosts";
 import { useAuthStore } from "@/stores/auth.store";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import { uploadsApi } from "@/lib/uploadsApi";
 import { htmlToMarkdown } from "@/lib/markdown";
 import { POST_STATUS_LABEL, POST_STATUS_PILL_CLASS } from "@/lib/postStatus";
@@ -32,11 +34,18 @@ export default function EditorPage() {
 	);
 }
 
-function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string }) {
+function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?: string }) {
 	const navigate = useNavigate();
 	const user = useAuthStore((s) => s.user);
 
-	const postQuery = usePostById(mode === "edit" ? postId : undefined);
+	// `postId` can be assigned mid-session: when the user first types into a
+	// brand-new editor, we eagerly create a draft so autosave has something to
+	// patch against. After that, we replaceState the URL so a refresh lands
+	// back on /editor/$postId instead of /editor/new.
+	const [postId, setPostId] = useState<string | undefined>(initialPostId);
+	const effectiveMode: "new" | "edit" = postId ? "edit" : "new";
+
+	const postQuery = usePostById(postId);
 	const categoriesQuery = useCategories();
 	const createPost = useCreatePost();
 	const updatePost = useUpdatePost();
@@ -53,6 +62,15 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	const [uploadingCover, setUploadingCover] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const hasLoadedRef = useRef(false);
+	// Guards against double-creating a draft while the first eager-create is
+	// still in flight. A second keystroke arriving 50ms after the first must
+	// not fire a second POST /posts.
+	const eagerCreateInflightRef = useRef(false);
+	// Stops the eager-create effect from retrying forever after a failure.
+	// Without this, a 400 from validation would re-fire on every keystroke
+	// (state still "meaningful", no postId, inflight=false) and spam the
+	// server. The user has to refresh or change something material to retry.
+	const eagerCreateFailedRef = useRef(false);
 
 	useEffect(() => {
 		const preview = pendingCover?.preview;
@@ -62,7 +80,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	}, [pendingCover]);
 
 	useEffect(() => {
-		if (mode === "edit" && postQuery.data && !hasLoadedRef.current) {
+		if (postQuery.data && !hasLoadedRef.current) {
 			hasLoadedRef.current = true;
 			const p = postQuery.data;
 			setTitle(p.title);
@@ -74,7 +92,103 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 			setVersion(p.version);
 			setSelectedCategoryIds((p.categories ?? []).map((c) => c.category.id));
 		}
-	}, [mode, postQuery.data]);
+	}, [postQuery.data]);
+
+	// Autosave is enabled only while:
+	//   - the user is the post author (admin edits go through manual save —
+	//     the server rejects with 403 otherwise, which would render a noisy
+	//     "save failed" toast every 30s)
+	//   - the post is still a draft (server enforces this too with 409)
+	//   - there's actually a postId (i.e. we've eagerly created the draft row)
+	const isAuthor = !postQuery.data || (!!user && postQuery.data.user?.username === user.username);
+	const autosaveEnabled = !!postId && status === "draft" && isAuthor;
+
+	// Memoize the payload so useAutoSave's effect doesn't see a "new" reference
+	// on every render. tags is joined → split each save; kept simple because
+	// the editor isn't on a hot render path.
+	const autosavePayload = useMemo(() => {
+		// Skip contentMd in autosave — converting HTML→MD on every keystroke is
+		// expensive. Backend re-derives reading_time from contentMd only when
+		// it's provided; for autosave the slightly stale readingTime is fine,
+		// and the final manual save sends the real contentMd.
+		return {
+			title: title.trim() || "Untitled",
+			contentHtml,
+			excerpt: excerpt.trim() || null,
+			tags: tagsInput
+				.split(",")
+				.map((t) => t.trim())
+				.filter(Boolean),
+		};
+	}, [title, contentHtml, excerpt, tagsInput]);
+
+	const autoSave = useAutoSave({
+		postId,
+		enabled: autosaveEnabled,
+		payload: autosavePayload,
+		// Keep local version in sync with server: each autosave bumps version
+		// server-side, and a stale local value would make the next manual
+		// "Save draft" 409 on the optimistic-concurrency check.
+		onSaved: (nextVersion) => setVersion(nextVersion),
+	});
+
+	// Eager-create a draft on the very first meaningful keystroke in "new"
+	// mode. We need a postId before autosave can fire; doing it here (instead
+	// of on /editor/new mount) avoids littering the DB with empty drafts from
+	// users who clicked "New post" and bounced.
+	useEffect(() => {
+		if (postId || eagerCreateInflightRef.current || eagerCreateFailedRef.current || !user) return;
+		const hasMeaningfulContent =
+			title.trim().length > 0 || (contentHtml.trim().length > 0 && contentHtml !== "<p></p>");
+		if (!hasMeaningfulContent) return;
+
+		// Categories are required by POST /posts. For an eager draft we don't
+		// have a category yet, so defer creation until the user picks one. This
+		// keeps the create-post contract simple and gives the user a clear
+		// reason their content isn't being saved yet.
+		if (selectedCategoryIds.length === 0) return;
+
+		eagerCreateInflightRef.current = true;
+		(async () => {
+			try {
+				let contentMd: string;
+				try {
+					contentMd = htmlToMarkdown(contentHtml);
+				} catch {
+					contentMd = "";
+				}
+				const created = await createPost.mutateAsync({
+					title: title.trim() || "Untitled",
+					contentHtml,
+					contentMd,
+					excerpt: excerpt.trim() || undefined,
+					coverUrl: null,
+					status: "draft",
+					tags: tagsInput
+						.split(",")
+						.map((t) => t.trim())
+						.filter(Boolean),
+					categoryIds: selectedCategoryIds,
+				});
+				setPostId(created.id);
+				setVersion(created.version);
+				setStatus(created.status);
+				// Replace the URL so refresh-during-editing lands on /editor/$id
+				// instead of /editor/new (which would reset the local state).
+				window.history.replaceState(null, "", `/editor/${created.id}`);
+			} catch (err) {
+				// Latch on failure so the effect doesn't spam POST /posts on
+				// every subsequent keystroke. The user has to manually click
+				// "Submit for review" later (which uses the same payload
+				// validated by the same schema) to retry — at that point the
+				// underlying problem is probably fixed.
+				eagerCreateFailedRef.current = true;
+				notify.error(formatApiError(err as ApiError, "Failed to start draft"));
+			} finally {
+				eagerCreateInflightRef.current = false;
+			}
+		})();
+	}, [postId, user, title, contentHtml, excerpt, tagsInput, selectedCategoryIds, createPost]);
 
 	function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
@@ -97,6 +211,11 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 
 	async function save(nextStatus: PostStatus) {
 		if (formInvalid || !user) return;
+
+		// Flush any pending autosave first so we don't race the manual save's
+		// version bump. The autosave hook serializes its own flushes, so this
+		// is safe even if a debounce timer is mid-flight.
+		await autoSave.saveNow();
 
 		let contentMd: string;
 		try {
@@ -152,7 +271,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 		};
 
 		try {
-			if (mode === "new") {
+			if (effectiveMode === "new") {
 				const created = await createPost.mutateAsync(payload);
 				navigate({ to: "/blog/$username", params: { username: user.username } });
 				return created;
@@ -160,6 +279,12 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 			const updated = await updatePost.mutateAsync({ id: postId!, version, ...payload });
 			setVersion(updated.version);
 			setStatus(updated.status);
+			// If the user pressed "Save draft", stay on the editor and surface
+			// the updated state. If they submitted for review / published, take
+			// them to their profile so they can see the post in its new status.
+			if (nextStatus !== "draft") {
+				navigate({ to: "/blog/$username", params: { username: user.username } });
+			}
 		} catch (err) {
 			const apiErr = err as ApiError;
 			const code = apiErr.response?.status;
@@ -179,7 +304,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 	// RequireAuth's effect navigates away. Bail rather than asserting non-null.
 	if (!user) return null;
 
-	if (mode === "edit" && postQuery.isLoading) {
+	if (effectiveMode === "edit" && postQuery.isLoading) {
 		return (
 			<div className="bg-brand-surface flex min-h-screen items-center justify-center">
 				<p className="text-brand-mid">Loading...</p>
@@ -187,7 +312,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 		);
 	}
 
-	if (mode === "edit" && postQuery.isError) {
+	if (effectiveMode === "edit" && postQuery.isError) {
 		return (
 			<div className="bg-brand-surface flex min-h-screen flex-col items-center justify-center gap-3">
 				<p className="text-red-600">Failed to load post</p>
@@ -213,35 +338,49 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 						</button>
 						<div>
 							<h1 className="text-brand-dark font-serif text-xl font-bold sm:text-2xl">
-								{mode === "new" ? "New post" : "Edit post"}
+								{effectiveMode === "new" ? "New post" : "Edit post"}
 							</h1>
-							{mode === "edit" && (
-								<p className="text-brand-mid mt-0.5 text-xs">
-									Status: <StatusBadge status={status} />
-								</p>
-							)}
+							<div className="mt-0.5 flex items-center gap-2 text-xs">
+								{effectiveMode === "edit" && (
+									<p className="text-brand-mid">
+										Status: <StatusBadge status={status} />
+									</p>
+								)}
+								{autosaveEnabled && (
+									<SaveStatus status={autoSave.status} lastSavedAt={autoSave.lastSavedAt} />
+								)}
+							</div>
 						</div>
 					</div>
 
 					<div className="flex items-center gap-2">
-						<button
-							type="button"
-							onClick={() => save("draft")}
-							disabled={submitting || formInvalid}
-							className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors disabled:opacity-60"
-						>
-							<Save className="h-4 w-4" />
-							<span className="hidden sm:inline">Save draft</span>
-						</button>
-						<button
-							type="button"
-							onClick={() => save("pending")}
-							disabled={submitting || formInvalid}
-							className="bg-brand-dark hover:bg-brand-mid flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-white transition-colors disabled:opacity-60"
-						>
-							<Send className="h-4 w-4" />
-							<span className="hidden sm:inline">Submit for review</span>
-						</button>
+						{/* Drafts are continuously autosaved — no manual "Save draft"
+						    button needed. For posts that have already been published or
+						    sent for review we still expose a manual "Save changes" so
+						    the author has an explicit moment to commit edits (autosave
+						    is intentionally disabled for non-drafts). */}
+						{effectiveMode === "edit" && status !== "draft" && (
+							<button
+								type="button"
+								onClick={() => save(status)}
+								disabled={submitting || formInvalid}
+								className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors disabled:opacity-60"
+							>
+								<Save className="h-4 w-4" />
+								<span className="hidden sm:inline">Save changes</span>
+							</button>
+						)}
+						{status === "draft" && (
+							<button
+								type="button"
+								onClick={() => save("pending")}
+								disabled={submitting || formInvalid}
+								className="bg-brand-dark hover:bg-brand-mid flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-white transition-colors disabled:opacity-60"
+							>
+								<Send className="h-4 w-4" />
+								<span className="hidden sm:inline">Submit for review</span>
+							</button>
+						)}
 					</div>
 				</div>
 			</div>
@@ -411,7 +550,7 @@ function EditorScreen({ mode, postId }: { mode: "new" | "edit"; postId?: string 
 							)}
 						</section>
 
-						{mode === "edit" && status === "rejected" && (
+						{effectiveMode === "edit" && status === "rejected" && (
 							<div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
 								This post was rejected. Edit it and resubmit for review.
 							</div>

@@ -7,6 +7,7 @@ import FeaturedCard from "@/components/blog/FeaturedCard";
 import HeroPostSkeleton from "@/components/blog/HeroPostSkeleton";
 import PostCardSkeleton from "@/components/blog/PostCardSkeleton";
 import PostMeta from "@/components/blog/PostMeta";
+import ContinueReadingSection from "@/components/blog/ContinueReadingSection";
 import type { CategorySection, Post } from "@/types";
 
 export default function HomePage() {
@@ -95,6 +96,9 @@ export default function HomePage() {
 			)}
 
 			<div className="mx-auto w-full max-w-7xl px-5 pt-12 pb-24 md:px-6">
+				{/* Continue reading — only renders for logged-in users with started posts */}
+				<ContinueReadingSection />
+
 				{/* Most viewed */}
 				{popularPosts.length > 0 && <MostViewedSection posts={popularPosts} />}
 
