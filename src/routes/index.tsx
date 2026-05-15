@@ -1,11 +1,31 @@
-import { lazy } from "react";
+import { lazy, type ComponentType, type ReactElement } from "react";
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import App from "@/App";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import LoginPage from "./login";
 import RegisterPage from "./register";
 import ForgotPasswordPage from "./forgot-password";
 import ResetPasswordPage from "./reset-password";
 import GoogleSuccessPage from "./auth.google-success";
+import NotFoundPage from "./not-found";
+
+// Wrap a route component in its own ErrorBoundary. Without per-route
+// boundaries, a runtime error in /chat/$id would unmount everything up to the
+// root boundary — including the realtime bridge and notification panel — so a
+// rare bug in one feature would knock out the whole app. Each major route gets
+// an "isolation cell" instead.
+//
+// Return a typed function component (not a generic ComponentType) so
+// TanStack Router's `RouteComponent` constraint accepts it.
+function withBoundary(Component: ComponentType): () => ReactElement {
+	return function Boundaried() {
+		return (
+			<ErrorBoundary scope="section">
+				<Component />
+			</ErrorBoundary>
+		);
+	};
+}
 
 const HomePage = lazy(() => import("./home"));
 const EditorPage = lazy(() => import("./editor"));
@@ -21,6 +41,10 @@ const ChatConversationPage = lazy(() => import("./chat.$conversationId"));
 
 const rootRoute = createRootRoute({
 	component: App,
+	// Without this, unmatched paths render an empty Outlet and the user sees a
+	// blank page — looks like a crashed app rather than "we don't have that
+	// page". Define here so it covers every unmatched child route too.
+	notFoundComponent: NotFoundPage,
 });
 
 const indexRoute = createRoute({
@@ -69,13 +93,13 @@ const googleSuccessRoute = createRoute({
 const editorRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/editor/$postId",
-	component: EditorPage,
+	component: withBoundary(EditorPage),
 });
 
 const newPostRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/editor/new",
-	component: EditorPage,
+	component: withBoundary(EditorPage),
 });
 
 const blogUserRoute = createRoute({
@@ -124,19 +148,19 @@ const savedRoute = createRoute({
 const settingsProfileRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/settings/profile",
-	component: SettingsProfilePage,
+	component: withBoundary(SettingsProfilePage),
 });
 
 const chatRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/chat",
-	component: ChatPage,
+	component: withBoundary(ChatPage),
 });
 
 const chatConversationRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/chat/$conversationId",
-	component: ChatConversationPage,
+	component: withBoundary(ChatConversationPage),
 });
 
 export const routeTree = rootRoute.addChildren([
