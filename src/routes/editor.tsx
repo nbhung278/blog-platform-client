@@ -57,6 +57,14 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	const [contentHtml, setContentHtml] = useState("");
 	const [status, setStatus] = useState<PostStatus>("draft");
 	const [version, setVersion] = useState(1);
+	// Mirror of `version` in a ref so async flows (autoSave.saveNow → manual
+	// PATCH) read the latest server version without waiting for a React
+	// re-render. Without this, the manual save's closure captures the pre-flush
+	// version and the backend returns 409 because autosave already bumped it.
+	const versionRef = useRef(1);
+	useEffect(() => {
+		versionRef.current = version;
+	}, [version]);
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 	const [pendingCover, setPendingCover] = useState<{ file: File; preview: string } | null>(null);
 	const [uploadingCover, setUploadingCover] = useState(false);
@@ -129,7 +137,13 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 		// Keep local version in sync with server: each autosave bumps version
 		// server-side, and a stale local value would make the next manual
 		// "Save draft" 409 on the optimistic-concurrency check.
-		onSaved: (nextVersion) => setVersion(nextVersion),
+		onSaved: (nextVersion) => {
+			// Sync both ref and state. The ref makes the bump visible to an
+			// in-flight `save()` whose closure already captured the prior
+			// `version`; the state keeps consumers like SaveStatus reactive.
+			versionRef.current = nextVersion;
+			setVersion(nextVersion);
+		},
 	});
 
 	// Eager-create a draft on the very first meaningful keystroke in "new"
@@ -147,6 +161,15 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 		// keeps the create-post contract simple and gives the user a clear
 		// reason their content isn't being saved yet.
 		if (selectedCategoryIds.length === 0) return;
+
+		// Defer eager-create when the user has a cover image picked but not yet
+		// uploaded (`pendingCover` is a local object URL, not an S3 URL). If we
+		// proceed here we'd POST with coverUrl=null, the route would remount
+		// after history.replaceState + setPostId, and the pendingCover object
+		// URL would be revoked — leaving the user with no cover and no way to
+		// recover it short of re-picking the file. Wait for the manual "Submit"
+		// path, which uploads the file before issuing the create.
+		if (pendingCover) return;
 
 		eagerCreateInflightRef.current = true;
 		(async () => {
@@ -170,7 +193,18 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 						.filter(Boolean),
 					categoryIds: selectedCategoryIds,
 				});
+				// Mark "already loaded" BEFORE setting postId. Otherwise the
+				// usePostById(postId) hook fires a GET as soon as setPostId
+				// commits, and when its response arrives the load effect (line
+				// ~90) would treat this fresh in-memory state as "uninitialized"
+				// and overwrite title/contentHtml/coverUrl/selectedCategoryIds
+				// with the server snapshot — which is necessarily a subset of
+				// what the user just typed (and `coverUrl: null` because eager
+				// create posts without an uploaded cover). That overwrite is
+				// the visible "flash" the user reports.
+				hasLoadedRef.current = true;
 				setPostId(created.id);
+				versionRef.current = created.version;
 				setVersion(created.version);
 				setStatus(created.status);
 				// Replace the URL so refresh-during-editing lands on /editor/$id
@@ -188,7 +222,17 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 				eagerCreateInflightRef.current = false;
 			}
 		})();
-	}, [postId, user, title, contentHtml, excerpt, tagsInput, selectedCategoryIds, createPost]);
+	}, [
+		postId,
+		user,
+		title,
+		contentHtml,
+		excerpt,
+		tagsInput,
+		selectedCategoryIds,
+		pendingCover,
+		createPost,
+	]);
 
 	function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
@@ -276,7 +320,15 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 				navigate({ to: "/blog/$username", params: { username: user.username } });
 				return created;
 			}
-			const updated = await updatePost.mutateAsync({ id: postId!, version, ...payload });
+			// Read version from the ref, not the closure: autoSave.saveNow()
+			// above may have bumped it via onSaved, but the closure was created
+			// at render time and still holds the pre-flush value.
+			const updated = await updatePost.mutateAsync({
+				id: postId!,
+				version: versionRef.current,
+				...payload,
+			});
+			versionRef.current = updated.version;
 			setVersion(updated.version);
 			setStatus(updated.status);
 			// If the user pressed "Save draft", stay on the editor and surface
