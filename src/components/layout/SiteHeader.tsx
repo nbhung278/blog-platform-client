@@ -344,7 +344,8 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 									Messages
 								</Link>
 								<Link
-									to="/editor/new"
+									to="/editor/$postId"
+									params={{ postId: "new" }}
 									className={MOBILE_NAV_LINK_CLASS}
 									onClick={() => setMobileOpen(false)}
 								>

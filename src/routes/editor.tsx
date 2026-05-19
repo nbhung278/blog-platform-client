@@ -1,10 +1,17 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Save, Send, Upload, X } from "lucide-react";
+import { ArrowLeft, Save, Send, Trash2, Upload, X } from "lucide-react";
 import PostEditor from "@/components/editor/PostEditor";
 import RequireAuth from "@/components/RequireAuth";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import SaveStatus from "@/components/editor/SaveStatus";
-import { useCategories, useCreatePost, usePostById, useUpdatePost } from "@/hooks/usePosts";
+import {
+	useCategories,
+	useCreatePost,
+	useDeletePost,
+	usePostById,
+	useUpdatePost,
+} from "@/hooks/usePosts";
 import { useAuthStore } from "@/stores/auth.store";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { uploadsApi } from "@/lib/uploadsApi";
@@ -48,7 +55,9 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	const postQuery = usePostById(postId);
 	const categoriesQuery = useCategories();
 	const createPost = useCreatePost();
+	const createPostAsync = createPost.mutateAsync;
 	const updatePost = useUpdatePost();
+	const deletePost = useDeletePost();
 
 	const [title, setTitle] = useState("");
 	const [excerpt, setExcerpt] = useState("");
@@ -56,15 +65,11 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	const [tagsInput, setTagsInput] = useState("");
 	const [contentHtml, setContentHtml] = useState("");
 	const [status, setStatus] = useState<PostStatus>("draft");
-	const [version, setVersion] = useState(1);
-	// Mirror of `version` in a ref so async flows (autoSave.saveNow → manual
-	// PATCH) read the latest server version without waiting for a React
-	// re-render. Without this, the manual save's closure captures the pre-flush
-	// version and the backend returns 409 because autosave already bumped it.
+	const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+	// Tracks server version for optimistic-concurrency checks. A ref (not state)
+	// so async flows (autoSave.saveNow → manual PATCH) always read the latest
+	// value without waiting for a React re-render.
 	const versionRef = useRef(1);
-	useEffect(() => {
-		versionRef.current = version;
-	}, [version]);
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 	const [pendingCover, setPendingCover] = useState<{ file: File; preview: string } | null>(null);
 	const [uploadingCover, setUploadingCover] = useState(false);
@@ -97,7 +102,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 			setTagsInput(p.tags.join(", "));
 			setContentHtml(p.contentHtml);
 			setStatus(p.status);
-			setVersion(p.version);
+			versionRef.current = p.version;
 			setSelectedCategoryIds((p.categories ?? []).map((c) => c.category.id));
 		}
 	}, [postQuery.data]);
@@ -138,11 +143,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 		// server-side, and a stale local value would make the next manual
 		// "Save draft" 409 on the optimistic-concurrency check.
 		onSaved: (nextVersion) => {
-			// Sync both ref and state. The ref makes the bump visible to an
-			// in-flight `save()` whose closure already captured the prior
-			// `version`; the state keeps consumers like SaveStatus reactive.
 			versionRef.current = nextVersion;
-			setVersion(nextVersion);
 		},
 	});
 
@@ -162,15 +163,6 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 		// reason their content isn't being saved yet.
 		if (selectedCategoryIds.length === 0) return;
 
-		// Defer eager-create when the user has a cover image picked but not yet
-		// uploaded (`pendingCover` is a local object URL, not an S3 URL). If we
-		// proceed here we'd POST with coverUrl=null, the route would remount
-		// after history.replaceState + setPostId, and the pendingCover object
-		// URL would be revoked — leaving the user with no cover and no way to
-		// recover it short of re-picking the file. Wait for the manual "Submit"
-		// path, which uploads the file before issuing the create.
-		if (pendingCover) return;
-
 		eagerCreateInflightRef.current = true;
 		(async () => {
 			try {
@@ -180,7 +172,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 				} catch {
 					contentMd = "";
 				}
-				const created = await createPost.mutateAsync({
+				const created = await createPostAsync({
 					title: title.trim() || "Untitled",
 					contentHtml,
 					contentMd,
@@ -205,11 +197,11 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 				hasLoadedRef.current = true;
 				setPostId(created.id);
 				versionRef.current = created.version;
-				setVersion(created.version);
 				setStatus(created.status);
 				// Replace the URL so refresh-during-editing lands on /editor/$id
-				// instead of /editor/new (which would reset the local state).
-				window.history.replaceState(null, "", `/editor/${created.id}`);
+				// instead of /editor/new. Use the router (not replaceState) so
+				// TanStack Router re-renders in-place instead of unmounting.
+				navigate({ to: "/editor/$postId", params: { postId: created.id }, replace: true });
 			} catch (err) {
 				// Latch on failure so the effect doesn't spam POST /posts on
 				// every subsequent keystroke. The user has to manually click
@@ -230,8 +222,8 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 		excerpt,
 		tagsInput,
 		selectedCategoryIds,
-		pendingCover,
-		createPost,
+		createPostAsync,
+		navigate,
 	]);
 
 	function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -252,6 +244,18 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	const contentInvalid = contentHtml.trim().length === 0 || contentHtml === "<p></p>";
 	const formInvalid = titleInvalid || categoryInvalid || contentInvalid || coverTooLarge;
 	const submitting = createPost.isPending || updatePost.isPending || uploadingCover;
+
+	async function confirmDeleteDraft() {
+		if (!postId || !user) return;
+		try {
+			await deletePost.mutateAsync(postId);
+			navigate({ to: "/blog/$username", params: { username: user.username } });
+		} catch {
+			notify.error("Failed to delete draft");
+		} finally {
+			setConfirmDeleteOpen(false);
+		}
+	}
 
 	async function save(nextStatus: PostStatus) {
 		if (formInvalid || !user) return;
@@ -329,7 +333,6 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 				...payload,
 			});
 			versionRef.current = updated.version;
-			setVersion(updated.version);
 			setStatus(updated.status);
 			// If the user pressed "Save draft", stay on the editor and surface
 			// the updated state. If they submitted for review / published, take
@@ -356,7 +359,10 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	// RequireAuth's effect navigates away. Bail rather than asserting non-null.
 	if (!user) return null;
 
-	if (effectiveMode === "edit" && postQuery.isLoading) {
+	// Only block render for the initial load of an existing post. After an
+	// eager-create, hasLoadedRef is already true so we skip the loading screen
+	// — showing it would unmount the form and lose TipTap + cover state.
+	if (effectiveMode === "edit" && postQuery.isLoading && !hasLoadedRef.current) {
 		return (
 			<div className="bg-brand-surface flex min-h-screen items-center justify-center">
 				<p className="text-brand-mid">Loading...</p>
@@ -406,6 +412,17 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 					</div>
 
 					<div className="flex items-center gap-2">
+						{effectiveMode === "edit" && status === "draft" && (
+							<button
+								type="button"
+								onClick={() => setConfirmDeleteOpen(true)}
+								disabled={submitting || deletePost.isPending}
+								className="text-brand-mid p-2 transition-colors hover:text-red-600 disabled:opacity-60"
+								aria-label="Delete draft"
+							>
+								<Trash2 className="h-4 w-4" />
+							</button>
+						)}
 						{/* Drafts are continuously autosaved — no manual "Save draft"
 						    button needed. For posts that have already been published or
 						    sent for review we still expose a manual "Save changes" so
@@ -610,6 +627,14 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 					</aside>
 				</div>
 			</div>
+			<ConfirmDialog
+				open={confirmDeleteOpen}
+				title="Delete this draft?"
+				description="This cannot be undone."
+				onConfirm={confirmDeleteDraft}
+				onCancel={() => setConfirmDeleteOpen(false)}
+				loading={deletePost.isPending}
+			/>
 		</div>
 	);
 }

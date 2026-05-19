@@ -96,12 +96,6 @@ const editorRoute = createRoute({
 	component: withBoundary(EditorPage),
 });
 
-const newPostRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/editor/new",
-	component: withBoundary(EditorPage),
-});
-
 const blogUserRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/blog/$username",
@@ -170,7 +164,6 @@ export const routeTree = rootRoute.addChildren([
 	forgotPasswordRoute,
 	resetPasswordRoute,
 	googleSuccessRoute,
-	newPostRoute,
 	editorRoute,
 	blogUserRoute,
 	blogPostRoute,

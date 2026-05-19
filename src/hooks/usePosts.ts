@@ -86,6 +86,7 @@ export function useCreatePost() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+			queryClient.invalidateQueries({ queryKey: ["my-drafts"] });
 			if (username) {
 				queryClient.invalidateQueries({ queryKey: ["public-posts", username] });
 			}
@@ -268,6 +269,7 @@ export function useDeletePost() {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+			queryClient.invalidateQueries({ queryKey: ["my-drafts"] });
 			if (username) {
 				queryClient.invalidateQueries({ queryKey: ["public-posts", username] });
 			}

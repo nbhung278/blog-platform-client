@@ -171,7 +171,8 @@ export default function UserMenu({ user }: UserMenuProps) {
 							Saved posts
 						</Link>
 						<Link
-							to="/editor/new"
+							to="/editor/$postId"
+							params={{ postId: "new" }}
 							onClick={() => setOpen(false)}
 							role="menuitem"
 							className={itemClass}

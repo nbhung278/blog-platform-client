@@ -113,7 +113,8 @@ export default function BlogUserPage() {
 							{isOwner ? (
 								<div className="mt-5 space-y-2">
 									<Link
-										to="/editor/new"
+										to="/editor/$postId"
+										params={{ postId: "new" }}
 										className="bg-brand-dark hover:bg-brand-mid block w-full rounded-full py-2 text-center text-sm font-medium text-white transition-colors"
 									>
 										+ New post
@@ -176,7 +177,8 @@ export default function BlogUserPage() {
 								</p>
 								{isOwner && (
 									<Link
-										to="/editor/new"
+										to="/editor/$postId"
+										params={{ postId: "new" }}
 										className="bg-brand-dark hover:bg-brand-mid mt-6 inline-block px-6 py-2 text-sm text-white transition-colors"
 									>
 										Write your first post

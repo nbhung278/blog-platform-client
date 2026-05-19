@@ -75,6 +75,12 @@ export function useAutoSave({
 		const id = postIdRef.current;
 		if (!enabledRef.current || !id) return;
 
+		// Cancel any pending debounce — we're flushing now.
+		if (timerRef.current) {
+			clearTimeout(timerRef.current);
+			timerRef.current = null;
+		}
+
 		// If something is in flight, mark "another save needed" and await the
 		// chain instead of returning immediately. This makes saveNow() callers
 		// actually wait for the latest content to land — required for the

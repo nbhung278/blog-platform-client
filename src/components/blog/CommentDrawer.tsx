@@ -13,6 +13,7 @@ import {
 	useUpdateComment,
 } from "@/hooks/useComments";
 import { safeImageUrl } from "@/lib/sanitize";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ClapButton from "./ClapButton";
 
 const INITIAL_REPLIES = 3;
@@ -445,29 +446,14 @@ function CommentRow({
 
 	return (
 		<>
-			{confirmDelete && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-					<div className="w-80 rounded-2xl bg-white p-6 shadow-xl">
-						<h3 className="text-sm font-semibold text-gray-900">Delete comment?</h3>
-						<p className="mt-1 text-xs text-gray-500">This action cannot be undone.</p>
-						<div className="mt-5 flex justify-end gap-2">
-							<button
-								onClick={() => setConfirmDelete(false)}
-								className="rounded-lg px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100"
-							>
-								Cancel
-							</button>
-							<button
-								onClick={confirmDoDelete}
-								disabled={del.isPending}
-								className="rounded-lg bg-red-500 px-4 py-2 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50"
-							>
-								{del.isPending ? "Deleting…" : "Delete"}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			<ConfirmDialog
+				open={confirmDelete}
+				title="Delete comment?"
+				description="This action cannot be undone."
+				onConfirm={confirmDoDelete}
+				onCancel={() => setConfirmDelete(false)}
+				loading={del.isPending}
+			/>
 			<div id={`drawer-comment-${comment.id}`} className="group flex scroll-mt-24 gap-3">
 				<UserAvatar user={comment.user} size={isReply ? "sm" : "md"} />
 
