@@ -38,6 +38,9 @@ const SavedPage = lazy(() => import("./saved"));
 const SettingsProfilePage = lazy(() => import("./settings.profile"));
 const ChatPage = lazy(() => import("./chat"));
 const ChatConversationPage = lazy(() => import("./chat.$conversationId"));
+const AboutPage = lazy(() => import("./about"));
+const ContactPage = lazy(() => import("./contact"));
+const PrivacyPage = lazy(() => import("./privacy"));
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -157,6 +160,24 @@ const chatConversationRoute = createRoute({
 	component: withBoundary(ChatConversationPage),
 });
 
+const aboutRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/about",
+	component: AboutPage,
+});
+
+const contactRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/contact",
+	component: ContactPage,
+});
+
+const privacyRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/privacy",
+	component: PrivacyPage,
+});
+
 export const routeTree = rootRoute.addChildren([
 	indexRoute,
 	loginRoute,
@@ -174,4 +195,7 @@ export const routeTree = rootRoute.addChildren([
 	settingsProfileRoute,
 	chatRoute,
 	chatConversationRoute,
+	aboutRoute,
+	contactRoute,
+	privacyRoute,
 ]);

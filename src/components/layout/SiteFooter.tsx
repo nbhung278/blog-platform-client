@@ -9,8 +9,8 @@ export default function SiteFooter() {
 	return (
 		<footer className="bg-brand-cream border-brand-border mt-auto border-t">
 			<div className="mx-auto max-w-7xl px-5 py-12 md:px-6">
-				<div className="grid grid-cols-1 gap-10 md:grid-cols-4">
-					<div className="md:col-span-2">
+				<div className="grid grid-cols-2 gap-10 md:grid-cols-5">
+					<div className="col-span-2 md:col-span-2">
 						<Link to="/" className="flex items-end gap-2.5">
 							<div className="bg-brand flex h-9 items-center justify-center px-2.5">
 								<span className="font-serif text-lg font-bold tracking-wide text-white">
@@ -69,6 +69,38 @@ export default function SiteFooter() {
 									</li>
 								))
 							)}
+						</ul>
+					</div>
+
+					<div>
+						<h3 className="text-brand-dark font-serif text-sm font-semibold tracking-wide uppercase">
+							Company
+						</h3>
+						<ul className="mt-4 space-y-2 text-sm">
+							<li>
+								<Link
+									to="/about"
+									className="text-brand-mid hover:text-brand-dark transition-colors"
+								>
+									About
+								</Link>
+							</li>
+							<li>
+								<Link
+									to="/contact"
+									className="text-brand-mid hover:text-brand-dark transition-colors"
+								>
+									Contact
+								</Link>
+							</li>
+							<li>
+								<Link
+									to="/privacy"
+									className="text-brand-mid hover:text-brand-dark transition-colors"
+								>
+									Privacy
+								</Link>
+							</li>
 						</ul>
 					</div>
 				</div>
