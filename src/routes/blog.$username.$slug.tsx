@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { usePost, useFeed } from "@/hooks/usePosts";
 import { sanitizeHtml, safeImageUrl } from "@/lib/sanitize";
+import hljs from "highlight.js";
+hljs.configure({ ignoreUnescapedHTML: true });
 
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
@@ -106,7 +108,15 @@ export default function BlogPostPage() {
 		}
 	}, []);
 
-	const cleanHtml = useMemo(() => sanitizeHtml(post?.contentHtml ?? ""), [post?.contentHtml]);
+	const cleanHtml = useMemo(() => {
+		const sanitized = sanitizeHtml(post?.contentHtml ?? "");
+		if (!sanitized) return "";
+		const doc = new DOMParser().parseFromString(sanitized, "text/html");
+		doc.querySelectorAll("pre code").forEach((el) => {
+			hljs.highlightElement(el as HTMLElement);
+		});
+		return doc.body.innerHTML;
+	}, [post?.contentHtml]);
 
 	useEffect(() => {
 		if (!post) return;
