@@ -155,10 +155,19 @@ export function useRealtime() {
 				}
 			};
 
-			ws.onclose = () => {
+			ws.onclose = (ev) => {
 				if (pingTimer) clearInterval(pingTimer);
 				pingTimer = null;
 				if (stopped) return;
+				// Backend signals "stop reconnecting" via custom 4xxx close codes
+				// (connection limit, message too large, rate limit) and policy
+				// violation 1008. Hammering reconnect after a server-side reject
+				// just burns CPU/log lines and never succeeds until the user takes
+				// an action (refresh, logout, fix abuse). Bail out instead.
+				if (ev.code === 1008 || (ev.code >= 4000 && ev.code <= 4999)) {
+					stopped = true;
+					return;
+				}
 				const delay = Math.min(30_000, 1000 * 2 ** retry);
 				retry += 1;
 				reconnectTimer = setTimeout(connect, delay);

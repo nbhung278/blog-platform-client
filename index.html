@@ -17,9 +17,21 @@
 			and ignores this meta tag in many setups; if dev needs a relaxed
 			CSP we'll inject it via Vite plugin rather than leaking it to prod.
 		-->
+		<!--
+			img-src was previously `https:` (any HTTPS host). Tightened to the
+			specific origins images actually come from:
+			  - 'self' for /og-default.jpg and favicons
+			  - data:/blob: for FileReader previews in the editor
+			  - cdn.strix-blog.uk + the S3 bucket for user-uploaded media
+			  - lh3.googleusercontent.com for Google OAuth avatars (set by
+			    the backend OAuth callback; user-edited avatars are restricted
+			    to S3/CDN by the backend allowlist)
+			Anything else loads → CSP block → keeps a future allowlist
+			regression from silently exfiltrating reader IPs via <img src>.
+		-->
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.strix-blog.uk wss://api.strix-blog.uk https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+			content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.strix-blog.uk https://strix-blog-media.s3.ap-southeast-1.amazonaws.com https://lh3.googleusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.strix-blog.uk wss://api.strix-blog.uk https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'"
 		/>
 
 		<!-- Open Graph / social sharing defaults (individual pages override these) -->

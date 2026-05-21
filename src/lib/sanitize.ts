@@ -1,8 +1,10 @@
 import DOMPurify from "isomorphic-dompurify";
 
 // Sanitize HTML produced by the Tiptap editor before rendering with
-// dangerouslySetInnerHTML. Allowlist is intentionally narrow — extend only
-// when the editor gains new node types.
+// dangerouslySetInnerHTML. The allowlist must mirror every Tiptap extension
+// the editor enables (StarterKit + Image + Link + Highlight + TextAlign +
+// Color + Table + Youtube). When the editor gains a new node type, add the
+// matching tag here AND in blog-platform-admin/src/lib/sanitize.ts.
 const ALLOWED_TAGS = [
 	"p",
 	"br",
@@ -27,26 +29,82 @@ const ALLOWED_TAGS = [
 	"figcaption",
 	"span",
 	"div",
+	// Table extension renders standard table markup with optional colgroup.
+	"table",
+	"thead",
+	"tbody",
+	"tfoot",
+	"tr",
+	"th",
+	"td",
+	"caption",
+	"colgroup",
+	"col",
+	// Youtube extension renders <div data-youtube-video><iframe ...></iframe></div>.
+	// The iframe src is locked to youtube/youtube-nocookie embeds by the hook
+	// registered below — any other iframe is stripped.
+	"iframe",
 ];
 
-const ALLOWED_ATTR = ["href", "src", "alt", "title", "target", "rel", "class"];
+const ALLOWED_ATTR = [
+	"href",
+	"src",
+	"alt",
+	"title",
+	"target",
+	"rel",
+	"class",
+	// Table column sizing produced by the resizable Table extension.
+	"colwidth",
+	"colspan",
+	"rowspan",
+	// Iframe attrs needed for YouTube embeds. The src itself is validated by
+	// the uponSanitizeElement hook so a non-YouTube iframe never survives.
+	"allow",
+	"allowfullscreen",
+	"frameborder",
+	"width",
+	"height",
+	"data-youtube-video",
+];
 
-export function sanitizeHtml(html: string): string {
-	return DOMPurify.sanitize(html, {
-		ALLOWED_TAGS,
-		ALLOWED_ATTR,
-		// Force external links to be safe.
-		ADD_ATTR: ["target", "rel"],
+// YouTube and youtube-nocookie embeds only. Anything else surfacing as an
+// <iframe> (e.g. an attacker hand-crafting one inside contentHtml) gets
+// dropped before the sanitized HTML returns.
+const YOUTUBE_EMBED_RE = /^https:\/\/www\.(?:youtube|youtube-nocookie)\.com\/embed\/[\w-]+/;
+
+let hookRegistered = false;
+function ensureHook() {
+	if (hookRegistered) return;
+	hookRegistered = true;
+	DOMPurify.addHook("uponSanitizeElement", (node, data) => {
+		if (data.tagName !== "iframe") return;
+		// `node` is an Element when tagName is "iframe"; getAttribute is safe.
+		const src = (node as Element).getAttribute("src") || "";
+		if (!YOUTUBE_EMBED_RE.test(src)) {
+			(node as Element).parentNode?.removeChild(node as Element);
+		}
 	});
 }
 
-// Returns the URL only if it parses to http(s). Rejects javascript:, data:,
-// file: etc. Use this before binding user-controlled URLs to `<img src>` or
-// `<a href>` so a tampered avatar field can't run scripts.
+export function sanitizeHtml(html: string): string {
+	ensureHook();
+	return DOMPurify.sanitize(html, {
+		ALLOWED_TAGS,
+		ALLOWED_ATTR,
+	});
+}
+
+// Returns the URL only if it parses to an absolute http(s) URL. Rejects
+// `javascript:`, `data:`, `file:`, etc., and rejects relative paths so a
+// tampered avatar field can't render as a same-origin URL (which would let
+// an attacker point an <img src> at a sensitive same-site page).
 export function safeImageUrl(url: string | null | undefined): string | null {
 	if (!url) return null;
 	try {
-		const parsed = new URL(url, window.location.origin);
+		// No base argument — `new URL` will throw on relative inputs. That's
+		// the behavior we want: external image refs only.
+		const parsed = new URL(url);
 		if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
 		return parsed.toString();
 	} catch {
