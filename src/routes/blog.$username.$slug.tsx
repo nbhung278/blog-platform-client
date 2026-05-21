@@ -198,6 +198,8 @@ export default function BlogPostPage() {
 					<img
 						src={safeCoverUrl}
 						alt=""
+						width={1200}
+						height={675}
 						loading="eager"
 						decoding="async"
 						fetchPriority="high"

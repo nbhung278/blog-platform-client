@@ -9,7 +9,10 @@ export interface ContinueReadingItem {
 	progress: number;
 	scrollY: number;
 	updatedAt: string;
-	post: Pick<Post, "id" | "title" | "slug" | "excerpt" | "coverUrl" | "readingTime"> & {
+	post: Pick<
+		Post,
+		"id" | "title" | "slug" | "excerpt" | "coverUrl" | "thumbnailUrl" | "readingTime"
+	> & {
 		user: { name: string; username: string; avatarUrl: string | null };
 	};
 }

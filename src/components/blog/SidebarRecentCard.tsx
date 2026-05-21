@@ -11,11 +11,12 @@ const SidebarRecentCard = memo(function SidebarRecentCard({ post }: { post: Post
 		>
 			{post.coverUrl ? (
 				<img
-					src={post.coverUrl}
+					src={post.thumbnailUrl ?? post.coverUrl}
 					alt={post.title}
 					width={400}
 					height={225}
 					loading="lazy"
+					decoding="async"
 					className="aspect-video w-full rounded object-cover"
 				/>
 			) : (

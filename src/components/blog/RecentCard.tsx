@@ -21,11 +21,12 @@ const RecentCard = memo(function RecentCard({ post }: { post: Post }) {
 			</div>
 			{post.coverUrl && (
 				<img
-					src={post.coverUrl}
+					src={post.thumbnailUrl ?? post.coverUrl}
 					alt={post.title}
 					width={128}
 					height={96}
 					loading="lazy"
+					decoding="async"
 					className="h-24 w-32 shrink-0 rounded object-cover"
 				/>
 			)}

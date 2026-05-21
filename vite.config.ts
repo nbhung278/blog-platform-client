@@ -48,5 +48,18 @@ export default defineConfig({
 		// drags transitive deps onto the home-page critical path because
 		// Rollup can't undo a manual chunk decision when it discovers a
 		// shared module. Letting Rollup decide keeps the entry chunk small.
+		rollupOptions: {
+			output: {
+				// Strip hash from woff2 font filenames so index.html can
+				// reference them with stable <link rel="preload"> tags.
+				// All other assets keep their content-hash for cache busting.
+				assetFileNames: (assetInfo) => {
+					if (assetInfo.name?.endsWith(".woff2")) {
+						return "assets/fonts/[name][extname]";
+					}
+					return "assets/[name]-[hash][extname]";
+				},
+			},
+		},
 	},
 });

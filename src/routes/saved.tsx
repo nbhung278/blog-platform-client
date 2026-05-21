@@ -67,6 +67,7 @@ interface SavedPost {
 	slug: string;
 	excerpt: string | null;
 	coverUrl: string | null;
+	thumbnailUrl?: string | null;
 	publishedAt: string | null;
 	readingTime: number;
 	tags: string[];
@@ -92,7 +93,7 @@ function SavedPostCard({ post }: { post: SavedPost }) {
 					className="shrink-0"
 				>
 					<img
-						src={post.coverUrl}
+						src={post.thumbnailUrl ?? post.coverUrl}
 						alt=""
 						loading="lazy"
 						className="h-32 w-48 rounded object-cover"

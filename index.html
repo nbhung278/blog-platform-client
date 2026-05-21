@@ -31,7 +31,7 @@
 		-->
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.strix-blog.uk https://strix-blog-media.s3.ap-southeast-1.amazonaws.com https://lh3.googleusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.strix-blog.uk wss://api.strix-blog.uk https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+			content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.strix-blog.uk https://strix-blog-media.s3.ap-southeast-1.amazonaws.com https://lh3.googleusercontent.com; font-src 'self' data:; connect-src 'self' https://api.strix-blog.uk wss://api.strix-blog.uk https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'"
 		/>
 
 		<!-- Open Graph / social sharing defaults (individual pages override these) -->
@@ -79,39 +79,12 @@
          origin via the canonical URL. -->
 		<link rel="preconnect" href="https://api.strix-blog.uk" crossorigin />
 		<link rel="preconnect" href="https://cdn.strix-blog.uk" crossorigin />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<!--
-			Fonts: Inter (UI) + Source Serif 4 (headings + reading body).
-			Playfair Display was removed; --font-serif now maps to Source Serif 4
-			to avoid loading two serifs. Italic variants are not used in markup,
-			so we only request roman cuts. Source Serif 4 is variable-axis (opsz),
-			so a single file covers all sizes — we only need to list the weight axis.
-		-->
-		<!--
-			Two-line font load:
-			1. <link rel="preload" as="style"> kicks off the request as soon as
-			   the parser sees this tag — earlier than a plain stylesheet link
-			   would. Using `as=style` matches the credential mode of the second
-			   link, so the browser dedups the request.
-			2. <link rel="stylesheet"> applies the rules when ready. With
-			   `display=swap` on the Google URL, text renders in a fallback
-			   font immediately and swaps when the web font lands — no FOIT.
-			Earlier this used the `media=print; onload=this.media='all'`
-			deferred-stylesheet trick. That inline `onload` violates CSP
-			`script-src 'self'` (no inline event handlers without 'unsafe-hashes'),
-			so we dropped it. The preload above gives us most of the speed
-			benefit without the inline JS.
-		-->
-		<link
-			rel="preload"
-			as="style"
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap"
-		/>
-		<link
-			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap"
-		/>
+		<!-- Fonts are self-hosted via @fontsource-variable (Inter + Source Serif 4).
+		     Preloading the two latin subsets here (before CSS is parsed) moves font
+		     download off the critical chain: browser starts fetching them in parallel
+		     with the JS bundle instead of waiting for CSS → @font-face discovery. -->
+		<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/inter-latin-wght-normal.woff2" crossorigin />
+		<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/source-serif-4-latin-wght-normal.woff2" crossorigin />
 	</head>
 	<body>
 		<div id="root"></div>

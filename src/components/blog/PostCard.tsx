@@ -17,7 +17,7 @@ const PostCard = memo(function PostCard({ post, username }: PostCardProps) {
 		>
 			{post.coverUrl && (
 				<img
-					src={post.coverUrl}
+					src={post.thumbnailUrl ?? post.coverUrl}
 					alt=""
 					width={1200}
 					height={600}

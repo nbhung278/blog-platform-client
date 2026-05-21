@@ -17,7 +17,7 @@ const FeaturedCard = memo(function FeaturedCard({ post, priority = false }: Prop
 		>
 			{post.coverUrl ? (
 				<img
-					src={post.coverUrl}
+					src={post.thumbnailUrl ?? post.coverUrl}
 					alt={post.title}
 					width={1200}
 					height={675}

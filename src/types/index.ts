@@ -25,6 +25,7 @@ export interface Post {
 	contentHtml: string;
 	excerpt: string | null;
 	coverUrl: string | null;
+	thumbnailUrl?: string | null;
 	ogImageUrl: string | null;
 	status: PostStatus;
 	publishedAt: string | null;
@@ -47,6 +48,7 @@ export interface PostInput {
 	contentHtml: string;
 	excerpt?: string;
 	coverUrl?: string | null;
+	thumbnailUrl?: string | null;
 	status?: PostStatus;
 	tags?: string[];
 	metaTitle?: string;

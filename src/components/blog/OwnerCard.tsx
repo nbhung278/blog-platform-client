@@ -43,7 +43,7 @@ const OwnerCard = memo(function OwnerCard({ post }: { post: Post }) {
 			>
 				{post.coverUrl ? (
 					<img
-						src={post.coverUrl}
+						src={post.thumbnailUrl ?? post.coverUrl}
 						alt={post.title}
 						width={1200}
 						height={675}

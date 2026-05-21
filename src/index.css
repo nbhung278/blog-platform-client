@@ -207,12 +207,12 @@
 
 @theme {
 	--font-serif:
-		"Source Serif 4", "Source Serif Pro", "Iowan Old Style", "Apple Garamond", Baskerville, Georgia,
-		serif;
-	--font-sans: "Inter", system-ui, -apple-system, sans-serif;
+		"Source Serif 4 Variable", "Source Serif 4", "Source Serif Pro", "Iowan Old Style",
+		"Apple Garamond", Baskerville, Georgia, serif;
+	--font-sans: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
 	--font-reading:
-		"Source Serif 4", "Source Serif Pro", "Iowan Old Style", "Apple Garamond", Baskerville,
-		"Times New Roman", serif;
+		"Source Serif 4 Variable", "Source Serif 4", "Source Serif Pro", "Iowan Old Style",
+		"Apple Garamond", Baskerville, "Times New Roman", serif;
 
 	/* Brand palette */
 	--color-brand: #8b5e3c;

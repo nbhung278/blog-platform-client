@@ -62,6 +62,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	const [title, setTitle] = useState("");
 	const [excerpt, setExcerpt] = useState("");
 	const [coverUrl, setCoverUrl] = useState("");
+	const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 	const [tagsInput, setTagsInput] = useState("");
 	const [contentHtml, setContentHtml] = useState("");
 	const [status, setStatus] = useState<PostStatus>("draft");
@@ -99,6 +100,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 			setTitle(p.title);
 			setExcerpt(p.excerpt ?? "");
 			setCoverUrl(p.coverUrl ?? "");
+			setThumbnailUrl(p.thumbnailUrl ?? null);
 			setTagsInput(p.tags.join(", "));
 			setContentHtml(p.contentHtml);
 			setStatus(p.status);
@@ -278,9 +280,10 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 		if (pendingCover) {
 			setUploadingCover(true);
 			try {
-				const { url } = await uploadsApi.uploadImage(pendingCover.file);
+				const { url, thumbnailUrl: thumb } = await uploadsApi.uploadImage(pendingCover.file);
 				finalCoverUrl = url;
 				setCoverUrl(url);
+				setThumbnailUrl(thumb);
 				setPendingCover(null);
 			} catch (err) {
 				notify.error(formatApiError(err as ApiError, "Failed to upload cover image"));
@@ -294,9 +297,12 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 			finalCoverUrl = coverUrl.trim() || null;
 			if (finalCoverUrl) {
 				try {
-					const { url } = await uploadsApi.uploadFromUrl(finalCoverUrl);
+					const { url, thumbnailUrl: thumb } = await uploadsApi.uploadFromUrl(finalCoverUrl);
 					finalCoverUrl = url;
-					if (url !== coverUrl.trim()) setCoverUrl(url);
+					if (url !== coverUrl.trim()) {
+						setCoverUrl(url);
+						setThumbnailUrl(thumb);
+					}
 				} catch (err) {
 					notify.error(formatApiError(err as ApiError, "Failed to fetch cover image"));
 					return;
@@ -310,6 +316,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 			contentMd,
 			excerpt: excerpt.trim() || undefined,
 			coverUrl: finalCoverUrl,
+			thumbnailUrl: finalCoverUrl ? thumbnailUrl : null,
 			status: nextStatus,
 			tags: tagsInput
 				.split(",")

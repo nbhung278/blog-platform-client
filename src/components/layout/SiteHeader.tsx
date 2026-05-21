@@ -234,9 +234,6 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 					{/* Wordmark renders at the header's content height. text-brand
 					    drives the SVG color through currentColor. */}
 					<StrixLogo className="text-brand h-10 w-auto md:h-12" />
-					<span className="text-brand-dark hidden font-serif text-base font-medium sm:inline">
-						Code as Craft
-					</span>
 				</Link>
 
 				<div className="flex-1" />
@@ -286,6 +283,9 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 								<img
 									src={user.avatarUrl}
 									alt={user.name}
+									width={40}
+									height={40}
+									decoding="async"
 									className="h-10 w-10 rounded-full object-cover"
 								/>
 							) : (

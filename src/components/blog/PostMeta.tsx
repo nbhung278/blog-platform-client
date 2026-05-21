@@ -2,11 +2,19 @@ import type { Post } from "@/types";
 import { safeImageUrl } from "@/lib/sanitize";
 
 function Avatar({ post, size = "sm" }: { post: Post; size?: "sm" | "md" }) {
+	const px = size === "md" ? 36 : 28;
 	const dim = size === "md" ? "h-9 w-9 text-sm" : "h-7 w-7 text-xs";
 	const src = safeImageUrl(post.user?.avatarUrl);
 	if (src) {
 		return (
-			<img src={src} alt={post.user?.name ?? ""} className={`${dim} rounded-full object-cover`} />
+			<img
+				src={src}
+				alt={post.user?.name ?? ""}
+				width={px}
+				height={px}
+				decoding="async"
+				className={`${dim} rounded-full object-cover`}
+			/>
 		);
 	}
 	return (

@@ -37,7 +37,7 @@ export default function ContinueReadingSection() {
 function ContinueReadingCard({ item }: { item: ContinueReadingItem }) {
 	const dismiss = useDismissReadingItem();
 	const pct = Math.round(item.progress * 100);
-	const cover = safeImageUrl(item.post.coverUrl);
+	const cover = safeImageUrl(item.post.thumbnailUrl ?? item.post.coverUrl);
 
 	return (
 		<div className="group border-brand-border bg-brand-cream relative flex flex-col overflow-hidden rounded-lg border transition-colors">
@@ -50,7 +50,15 @@ function ContinueReadingCard({ item }: { item: ContinueReadingItem }) {
 				className="flex flex-1 flex-col"
 			>
 				{cover ? (
-					<img src={cover} alt="" loading="lazy" className="aspect-video w-full object-cover" />
+					<img
+						src={cover}
+						alt=""
+						width={800}
+						height={450}
+						loading="lazy"
+						decoding="async"
+						className="aspect-video w-full object-cover"
+					/>
 				) : (
 					<div className="bg-brand-hero flex aspect-video w-full items-center justify-center">
 						<span className="text-brand-border font-serif text-3xl font-bold">
