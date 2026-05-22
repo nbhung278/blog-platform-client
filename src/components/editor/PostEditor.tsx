@@ -44,6 +44,7 @@ import {
 	Rows3,
 	Columns3,
 	Film,
+	CloudUpload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadsApi } from "@/lib/uploadsApi";
@@ -68,9 +69,18 @@ const TEXT_COLORS = [
 	{ name: "Pink", value: "oklch(0.65 0.22 350)" },
 ];
 
+// Max parallel /uploads/from-url calls when rehosting pasted external images.
+// Keep this low — backend resizes via sharp (CPU-bound) and the per-user limit
+// is 200/15m, so a small window stays responsive without hammering either side.
+const REHOST_CONCURRENCY = 3;
+
 export default function PostEditor({ value, onChange, placeholder }: PostEditorProps) {
 	const uploadingRef = useRef(false);
 	const mountedRef = useRef(true);
+	// URLs currently being rehosted — used to skip duplicates if the user pastes
+	// or triggers the toolbar action while a previous batch is still running.
+	const rehostingUrlsRef = useRef<Set<string>>(new Set());
+	const [rehosting, setRehosting] = useState(false);
 
 	useEffect(() => {
 		mountedRef.current = true;
@@ -125,6 +135,17 @@ export default function PostEditor({ value, onChange, placeholder }: PostEditorP
 						}
 					}
 				}
+				// Pasting HTML (e.g. an article from another blog) brings external
+				// <img> tags along. Let Tiptap parse + insert first, then schedule
+				// a rehost sweep on the next tick so the doc reflects the new
+				// nodes. Failures keep the original src; the user can retry via
+				// the toolbar button.
+				const html = event.clipboardData?.getData("text/html");
+				if (html && /<img\s/i.test(html)) {
+					queueMicrotask(() => {
+						void rehostExternalImages({ silent: true });
+					});
+				}
 				return false;
 			},
 			handleDrop: (_view, event) => {
@@ -148,6 +169,87 @@ export default function PostEditor({ value, onChange, placeholder }: PostEditorP
 			editor.commands.setContent(value || "", { emitUpdate: false });
 		}
 	}, [editor, value]);
+
+	// Walk the document, rehost every <img> whose src is not already on our
+	// CDN. Runs after HTML paste (silent: true → only toast on failure) and
+	// from the toolbar button (silent: false → show counts on success).
+	// The backend short-circuits URLs already on our media origin, so we don't
+	// need to maintain a host allowlist here.
+	async function rehostExternalImages({ silent = false } = {}) {
+		if (!editor) return;
+		const ed: Editor = editor;
+		const targets: string[] = [];
+		ed.state.doc.descendants((node) => {
+			if (node.type.name !== "image") return;
+			const src = node.attrs.src as string | undefined;
+			if (!src) return;
+			if (!/^https?:\/\//i.test(src)) return;
+			if (rehostingUrlsRef.current.has(src)) return;
+			if (!targets.includes(src)) targets.push(src);
+		});
+		if (targets.length === 0) {
+			if (!silent) toast.info("No external images to rehost");
+			return;
+		}
+		for (const src of targets) rehostingUrlsRef.current.add(src);
+		setRehosting(true);
+
+		const toastId = toast.loading(`Uploading ${targets.length} images to CDN...`);
+		let succeeded = 0;
+		let failed = 0;
+
+		// Bounded-concurrency worker pool: each worker drains the shared queue
+		// until empty; awaiting all workers tells us when the batch is done.
+		const queue = [...targets];
+		async function worker() {
+			while (queue.length > 0) {
+				const src = queue.shift();
+				if (!src) return;
+				try {
+					const { url: cdnUrl } = await uploadsApi.uploadFromUrl(src);
+					if (!mountedRef.current || ed.isDestroyed) return;
+					if (cdnUrl !== src) swapImageSrc(src, cdnUrl);
+					succeeded += 1;
+				} catch {
+					failed += 1;
+				} finally {
+					rehostingUrlsRef.current.delete(src);
+				}
+			}
+		}
+		await Promise.all(
+			Array.from({ length: Math.min(REHOST_CONCURRENCY, targets.length) }, () => worker()),
+		);
+
+		if (!mountedRef.current) {
+			toast.dismiss(toastId);
+			return;
+		}
+		setRehosting(false);
+		if (failed === 0) {
+			toast.success(`Rehosted ${succeeded} image${succeeded === 1 ? "" : "s"}`, { id: toastId });
+		} else if (succeeded === 0) {
+			toast.error(`Failed to rehost ${failed} image${failed === 1 ? "" : "s"}`, { id: toastId });
+		} else {
+			toast.warning(`Rehosted ${succeeded}/${targets.length}, ${failed} failed`, { id: toastId });
+		}
+	}
+
+	// Find every image node whose src matches `oldSrc` and rewrite the attr in
+	// a single transaction. Re-scanning positions inside the transaction avoids
+	// the stale-position problem if multiple workers swap simultaneously.
+	function swapImageSrc(oldSrc: string, newSrc: string) {
+		if (!editor || editor.isDestroyed) return;
+		const { tr } = editor.state;
+		let changed = false;
+		editor.state.doc.descendants((node, pos) => {
+			if (node.type.name !== "image") return;
+			if (node.attrs.src !== oldSrc) return;
+			tr.setNodeMarkup(pos, undefined, { ...node.attrs, src: newSrc });
+			changed = true;
+		});
+		if (changed) editor.view.dispatch(tr);
+	}
 
 	async function uploadAndInsert(file: File) {
 		if (!editor) return;
@@ -233,7 +335,9 @@ export default function PostEditor({ value, onChange, placeholder }: PostEditorP
 				onPickImage={pickAndUpload}
 				onSetLink={setLink}
 				onInsertYoutube={insertYoutube}
+				onRehostImages={() => void rehostExternalImages()}
 				uploadingRef={uploadingRef}
+				rehosting={rehosting}
 			/>
 			<div className="px-5 py-4">
 				<BubbleMenu
@@ -276,7 +380,9 @@ interface ToolbarProps {
 	onPickImage: () => void;
 	onSetLink: () => void;
 	onInsertYoutube: () => void;
+	onRehostImages: () => void;
 	uploadingRef: React.RefObject<boolean>;
+	rehosting: boolean;
 }
 
 function MainToolbar({
@@ -284,7 +390,9 @@ function MainToolbar({
 	onPickImage,
 	onSetLink,
 	onInsertYoutube,
+	onRehostImages,
 	uploadingRef,
+	rehosting,
 }: ToolbarProps) {
 	return (
 		<div className="border-brand-border bg-brand-hero/40 sticky top-0 z-20 flex flex-wrap items-center gap-0.5 border-b px-2 py-1.5 backdrop-blur">
@@ -434,6 +542,13 @@ function MainToolbar({
 					<Loader2 className="size-4 animate-spin" />
 				) : (
 					<ImageIcon className="size-4" />
+				)}
+			</TbBtn>
+			<TbBtn onClick={onRehostImages} disabled={rehosting} title="Rehost external images to CDN">
+				{rehosting ? (
+					<Loader2 className="size-4 animate-spin" />
+				) : (
+					<CloudUpload className="size-4" />
 				)}
 			</TbBtn>
 			<TbBtn onClick={onInsertYoutube} title="Embed YouTube video">
