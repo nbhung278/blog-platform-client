@@ -44,14 +44,6 @@ function EditIcon() {
 	);
 }
 
-function UploadIcon() {
-	return (
-		<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-			<path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0-12l-4 4m4-4l4 4M4 20h16" />
-		</svg>
-	);
-}
-
 function LogoutIcon() {
 	return (
 		<svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -169,16 +161,6 @@ export default function UserMenu({ user }: UserMenuProps) {
 						<Link to="/saved" onClick={() => setOpen(false)} role="menuitem" className={itemClass}>
 							<Bookmark className="h-4 w-4" />
 							Saved posts
-						</Link>
-						<Link
-							to="/editor/$postId"
-							params={{ postId: "new" }}
-							onClick={() => setOpen(false)}
-							role="menuitem"
-							className={itemClass}
-						>
-							<UploadIcon />
-							Write a post
 						</Link>
 						<button
 							onClick={handleLogout}

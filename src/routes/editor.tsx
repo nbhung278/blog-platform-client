@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Save, Send, Trash2, Upload, X } from "lucide-react";
+import { ArrowLeft, Eye, Save, Send, Trash2, Upload, X } from "lucide-react";
 import PostEditor from "@/components/editor/PostEditor";
 import RequireAuth from "@/components/RequireAuth";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -18,6 +18,7 @@ import { uploadsApi } from "@/lib/uploadsApi";
 import { htmlToMarkdown } from "@/lib/markdown";
 import { POST_STATUS_LABEL, POST_STATUS_PILL_CLASS } from "@/lib/postStatus";
 import { ALLOWED_IMAGE_TYPES } from "@/lib/constants";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { formatApiError, type ApiError } from "@/lib/apiErrors";
 import { notify } from "@/lib/notify";
 import type { PostStatus } from "@/types";
@@ -67,6 +68,16 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 	const [contentHtml, setContentHtml] = useState("");
 	const [status, setStatus] = useState<PostStatus>("draft");
 	const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+	const [showPreview, setShowPreview] = useState(false);
+
+	useEffect(() => {
+		if (!showPreview) return;
+		function handleKey(e: KeyboardEvent) {
+			if (e.key === "Escape") setShowPreview(false);
+		}
+		document.addEventListener("keydown", handleKey);
+		return () => document.removeEventListener("keydown", handleKey);
+	}, [showPreview]);
 	// Tracks server version for optimistic-concurrency checks. A ref (not state)
 	// so async flows (autoSave.saveNow → manual PATCH) always read the latest
 	// value without waiting for a React re-render.
@@ -419,6 +430,14 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 					</div>
 
 					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => setShowPreview(true)}
+							className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors"
+						>
+							<Eye className="h-4 w-4" />
+							<span className="hidden sm:inline">Preview</span>
+						</button>
 						{effectiveMode === "edit" && status === "draft" && (
 							<button
 								type="button"
@@ -642,6 +661,73 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 				onCancel={() => setConfirmDeleteOpen(false)}
 				loading={deletePost.isPending}
 			/>
+
+			{showPreview && (
+				<div
+					role="dialog"
+					aria-modal="true"
+					aria-label="Post preview"
+					className="fixed inset-0 z-50 overflow-y-auto bg-white"
+				>
+					<div className="border-brand-border bg-brand-cream sticky top-0 z-10 border-b">
+						<div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-2">
+							<span className="text-brand-mid text-xs">
+								Preview — this is how your post will appear when published.
+							</span>
+							<button
+								type="button"
+								onClick={() => setShowPreview(false)}
+								className="text-brand-mid hover:text-brand-dark flex items-center gap-1 text-xs"
+							>
+								<X className="h-3.5 w-3.5" />
+								Close
+							</button>
+						</div>
+					</div>
+					<article className="mx-auto max-w-3xl px-6 py-12">
+						{coverPreview && (
+							<img
+								src={coverPreview}
+								alt={title}
+								className="mb-8 aspect-video w-full rounded-lg object-cover"
+							/>
+						)}
+						<header className="mb-8 space-y-3">
+							<div className="text-brand-mid flex flex-wrap items-center gap-2 text-sm">
+								<span>@{user.username}</span>
+								<span>·</span>
+								<time>{new Date().toLocaleDateString()}</time>
+							</div>
+							<h1 className="text-brand-dark font-serif text-4xl leading-tight font-bold">
+								{title || "Untitled"}
+							</h1>
+							{excerpt && <p className="text-brand-mid text-lg">{excerpt}</p>}
+							{(() => {
+								const tags = tagsInput
+									.split(",")
+									.map((t) => t.trim())
+									.filter(Boolean);
+								return tags.length > 0 ? (
+									<div className="flex flex-wrap gap-1">
+										{tags.map((t) => (
+											<span
+												key={t}
+												className="border-brand-border text-brand-mid rounded-full border px-2 py-0.5 text-xs"
+											>
+												#{t}
+											</span>
+										))}
+									</div>
+								) : null;
+							})()}
+						</header>
+						<div
+							className="tiptap"
+							dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentHtml) }}
+						/>
+					</article>
+				</div>
+			)}
 		</div>
 	);
 }

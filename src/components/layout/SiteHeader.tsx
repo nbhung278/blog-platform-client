@@ -1,5 +1,6 @@
 import { type ReactNode, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { PenLine } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 import { useLogout } from "@/hooks/useAuth";
 import { useCategories } from "@/hooks/usePosts";
@@ -209,7 +210,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 
 	return (
 		<header className="bg-brand-cream sticky top-0 z-50 border-b border-black/10">
-			<div className="mx-auto flex max-w-7xl items-end justify-between gap-6 px-5 py-3 md:px-6 md:py-5">
+			<div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-2.5 md:px-6 md:py-3">
 				<Link
 					to="/"
 					className="flex shrink-0 items-center gap-3"
@@ -217,24 +218,42 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 				>
 					{/* Wordmark renders at the header's content height. text-brand
 					    drives the SVG color through currentColor. */}
-					<StrixLogo className="text-brand h-10 w-auto md:h-12" />
+					<StrixLogo className="text-brand h-7 w-auto md:h-8" />
 				</Link>
 
 				<div className="flex-1" />
 
 				{/* Desktop: either custom nav slot (e.g. "More from @user" on a post
 				    page) or the default nav with categories, search, user menu. */}
-				<div className="hidden items-center gap-3 md:flex">
+				<div className="hidden items-center gap-5 md:flex">
 					{navContent ?? (
 						<>
 							<CategoriesDropdown categories={categories} />
+							<Link to="/about" className={DESKTOP_NAV_LINK_CLASS}>
+								About
+							</Link>
+							<Link to="/contact" className={DESKTOP_NAV_LINK_CLASS}>
+								Contact
+							</Link>
 							<SearchBar onSubmit={handleSearch} />
+
 							{user ? (
-								<div className="flex items-center gap-2">
-									<ChatIcon />
-									<NotificationBell />
+								<>
+									<div className="border-brand-border h-5 border-l" />
+									<div className="flex items-center gap-3">
+										<ChatIcon />
+										<NotificationBell />
+									</div>
+									<Link
+										to="/editor/$postId"
+										params={{ postId: "new" }}
+										className="border-brand-border text-brand-dark hover:border-brand hover:text-brand flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors"
+									>
+										<PenLine className="h-3.5 w-3.5" />
+										Write
+									</Link>
 									<UserMenu user={user} />
-								</div>
+								</>
 							) : (
 								<Link
 									to="/login"
@@ -308,6 +327,23 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 							</div>
 						</div>
 					)}
+
+					<div className="flex flex-col border-t border-black/5 py-1">
+						<Link
+							to="/about"
+							className={MOBILE_NAV_LINK_CLASS}
+							onClick={() => setMobileOpen(false)}
+						>
+							About
+						</Link>
+						<Link
+							to="/contact"
+							className={MOBILE_NAV_LINK_CLASS}
+							onClick={() => setMobileOpen(false)}
+						>
+							Contact
+						</Link>
+					</div>
 
 					<div className="flex flex-col border-t border-black/5 py-1">
 						{user ? (
