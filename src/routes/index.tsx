@@ -170,6 +170,11 @@ const contactRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/contact",
 	component: ContactPage,
+	// Optional `?email=...` so the footer CTA can deep-link with the visitor's
+	// address prefilled. Anything else gets dropped.
+	validateSearch: (search: Record<string, unknown>): { email?: string } => ({
+		email: typeof search.email === "string" ? search.email : undefined,
+	}),
 });
 
 const privacyRoute = createRoute({

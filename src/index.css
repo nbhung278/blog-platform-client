@@ -220,9 +220,21 @@
 	--color-brand-dark: #3d2b1f;
 	--color-brand-mid: #6b4c35;
 	--color-brand-hero: #ede8dd;
-	--color-brand-cream: rgb(245, 240, 232);
+	--color-brand-cream: #faf9f5;
 	--color-brand-border: #ddd5c8;
 	--color-brand-surface: #faf8f4;
+}
+
+/* Right-to-left marquee for the home page post carousel. The track holds
+   two copies of the post list and animates from 0 to -50% so the seam at
+   the end is the start of the second copy. Speed (60s) is set inline. */
+@keyframes carousel-scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
 }
 
 /* Floating "+N" digit that rises out of the clap button on each click.

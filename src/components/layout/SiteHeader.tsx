@@ -13,12 +13,17 @@ interface SiteHeaderProps {
 }
 
 const MOBILE_NAV_LINK_CLASS =
-	"text-brand-dark hover:bg-brand-hero w-full px-6 py-3 text-base font-medium transition-colors";
+	"text-black hover:bg-brand-hero w-full px-6 py-3 text-base font-medium transition-colors";
+
+// Shared style for top-level nav buttons/links — keep weight medium (Claude-
+// style: dark text but not bold) so the row reads as quiet nav, not headlines.
+const DESKTOP_NAV_LINK_CLASS =
+	"text-black/80 hover:text-black flex items-center gap-1 text-sm font-medium transition-colors";
 
 function SearchIcon() {
 	return (
 		<svg
-			className="text-brand-mid h-4 w-4 shrink-0"
+			className="h-4 w-4 shrink-0 text-black/60"
 			fill="none"
 			viewBox="0 0 24 24"
 			stroke="currentColor"
@@ -52,7 +57,7 @@ function ChatIcon() {
 	return (
 		<Link
 			to="/chat"
-			className="text-brand-mid hover:text-brand-dark relative transition-colors"
+			className="relative text-black/80 transition-colors hover:text-black"
 			aria-label="Messages"
 		>
 			<svg
@@ -74,24 +79,6 @@ function ChatIcon() {
 				</span>
 			)}
 		</Link>
-	);
-}
-
-function LoginIcon() {
-	return (
-		<svg
-			className="text-brand-mid h-5 w-5"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-			strokeWidth={2}
-		>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-			/>
-		</svg>
 	);
 }
 
@@ -122,8 +109,8 @@ function SearchBar({
 		<form
 			className={
 				isBlock
-					? "border-brand-border bg-brand-surface flex w-full items-center gap-2 rounded-md border px-3 py-2.5"
-					: "border-brand-border flex items-center gap-2 rounded-full border px-4 py-2"
+					? "bg-brand-surface flex w-full items-center gap-2 rounded-md border border-black/15 px-3 py-2.5"
+					: "flex items-center gap-2 rounded-full border border-black/15 px-4 py-2"
 			}
 			onSubmit={(e) => {
 				e.preventDefault();
@@ -137,7 +124,7 @@ function SearchBar({
 				placeholder="Search Strix…"
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
-				className={`text-brand-dark placeholder:text-brand-mid bg-transparent text-sm outline-none ${
+				className={`bg-transparent text-sm text-black outline-none placeholder:text-black/40 ${
 					isBlock ? "min-w-0 flex-1" : "w-36"
 				}`}
 			/>
@@ -179,16 +166,13 @@ function CategoriesDropdown({ categories }: { categories: CategoryItem[] }) {
 
 	return (
 		<div ref={ref} className="relative">
-			<button
-				onClick={() => setOpen((o) => !o)}
-				className="text-brand-mid hover:text-brand-dark flex items-center gap-1 text-sm transition-colors hover:underline"
-			>
+			<button onClick={() => setOpen((o) => !o)} className={DESKTOP_NAV_LINK_CLASS}>
 				Categories
 				<ChevronDownIcon />
 			</button>
 
 			{open && (
-				<div className="bg-brand-surface border-brand-border absolute top-full left-0 z-50 mt-3 min-w-[220px] overflow-hidden rounded-lg border shadow-xl">
+				<div className="bg-brand-surface absolute top-full left-0 z-50 mt-3 min-w-[220px] overflow-hidden rounded-lg border border-black/10 shadow-xl">
 					{categories.length === 0 ? (
 						<p className="text-brand-mid px-4 py-3 text-sm">No categories yet</p>
 					) : (
@@ -224,7 +208,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 	}
 
 	return (
-		<header className="bg-brand-cream border-brand-border sticky top-0 z-50 border-b">
+		<header className="bg-brand-cream sticky top-0 z-50 border-b border-black/10">
 			<div className="mx-auto flex max-w-7xl items-end justify-between gap-6 px-5 py-3 md:px-6 md:py-5">
 				<Link
 					to="/"
@@ -254,10 +238,10 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 							) : (
 								<Link
 									to="/login"
-									className="text-brand-mid hover:text-brand-dark transition-colors"
+									className="text-sm font-medium text-black/80 transition-colors hover:text-black"
 									aria-label="Login"
 								>
-									<LoginIcon />
+									Login
 								</Link>
 							)}
 						</>
@@ -266,7 +250,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 
 				<div className="flex justify-end md:hidden">
 					<button
-						className="text-brand-mid p-1"
+						className="p-1 text-black/80"
 						onClick={() => setMobileOpen((o) => !o)}
 						aria-label="Toggle menu"
 					>
@@ -276,9 +260,9 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 			</div>
 
 			{mobileOpen && (
-				<div className="border-brand-border bg-brand-cream flex flex-col border-t md:hidden">
+				<div className="bg-brand-cream flex flex-col border-t border-black/10 md:hidden">
 					{user && (
-						<div className="border-brand-border/60 flex items-center gap-3 border-b px-6 py-4">
+						<div className="flex items-center gap-3 border-b border-black/5 px-6 py-4">
 							{user.avatarUrl ? (
 								<img
 									src={user.avatarUrl}
@@ -305,7 +289,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 					</div>
 
 					{categories.length > 0 && (
-						<div className="border-brand-border/60 border-t px-6 py-3">
+						<div className="border-t border-black/5 px-6 py-3">
 							<p className="text-brand-mid mb-2 text-[11px] font-semibold tracking-widest uppercase">
 								Categories
 							</p>
@@ -325,7 +309,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 						</div>
 					)}
 
-					<div className="border-brand-border/60 flex flex-col border-t py-1">
+					<div className="flex flex-col border-t border-black/5 py-1">
 						{user ? (
 							<>
 								<Link

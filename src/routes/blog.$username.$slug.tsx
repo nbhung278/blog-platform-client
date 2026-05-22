@@ -190,17 +190,7 @@ export default function BlogPostPage() {
 
 	return (
 		<div className="flex min-h-screen flex-col bg-white font-sans">
-			<SiteHeader
-				navContent={
-					<Link
-						to="/blog/$username"
-						params={{ username }}
-						className="text-brand-mid hover:text-brand-dark hidden text-sm transition-colors md:inline"
-					>
-						More from @{username} →
-					</Link>
-				}
-			/>
+			<SiteHeader />
 
 			{/* Cover image */}
 			{safeCoverUrl && (

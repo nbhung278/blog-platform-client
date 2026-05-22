@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Mail, Send, CheckCircle2 } from "lucide-react";
 import { AxiosError } from "axios";
+import { useSearch } from "@tanstack/react-router";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import { api } from "@/api/client";
@@ -8,8 +9,12 @@ import { api } from "@/api/client";
 type Status = "idle" | "submitting" | "success" | "error";
 
 export default function ContactPage() {
+	// `strict: false` lets us read the optional ?email= without coupling the
+	// component to the route id — the footer CTA deep-links here with the
+	// visitor's address prefilled.
+	const search = useSearch({ strict: false }) as { email?: string };
 	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
+	const [email, setEmail] = useState(search.email ?? "");
 	const [message, setMessage] = useState("");
 	// Honeypot field. Must stay empty; bots tend to auto-fill anything with a
 	// recognisable name. Kept off-screen with CSS instead of `type=hidden` so

@@ -83,8 +83,45 @@
 		     Preloading the two latin subsets here (before CSS is parsed) moves font
 		     download off the critical chain: browser starts fetching them in parallel
 		     with the JS bundle instead of waiting for CSS → @font-face discovery. -->
-		<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/inter-latin-wght-normal.woff2" crossorigin />
-		<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/source-serif-4-latin-wght-normal.woff2" crossorigin />
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/assets/fonts/inter-latin-wght-normal.woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/assets/fonts/source-serif-4-latin-wght-normal.woff2"
+			crossorigin
+		/>
+		<!-- latin-ext + vietnamese subsets are also on the LCP path (the home
+		     page headlines + body copy mix categories that fall outside the
+		     basic latin range). Preloading them avoids the 5s tail Lighthouse
+		     flagged for these two fonts as render-blockers on first paint. -->
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/assets/fonts/source-serif-4-latin-ext-wght-normal.woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/assets/fonts/source-serif-4-vietnamese-wght-normal.woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/assets/fonts/inter-vietnamese-wght-normal.woff2"
+			crossorigin
+		/>
 	</head>
 	<body>
 		<div id="root"></div>
