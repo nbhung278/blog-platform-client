@@ -1,8 +1,10 @@
 import { memo } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Post } from "@/types";
+import { formatReadingTime } from "@/lib/formatReadingTime";
 
 const SidebarRecentCard = memo(function SidebarRecentCard({ post }: { post: Post }) {
+	const reading = formatReadingTime(post.readingTime);
 	return (
 		<Link
 			to="/blog/$username/$slug"
@@ -25,7 +27,15 @@ const SidebarRecentCard = memo(function SidebarRecentCard({ post }: { post: Post
 				</div>
 			)}
 			<div className="mt-3">
-				<p className="text-xs text-gray-400">By {post.user?.name ?? "Unknown"}</p>
+				<p className="text-xs text-gray-400">
+					By {post.user?.name ?? "Unknown"}
+					{reading && (
+						<>
+							<span aria-hidden> · </span>
+							<span>{reading}</span>
+						</>
+					)}
+				</p>
 				<h3 className="mt-1 line-clamp-2 font-serif text-sm leading-snug font-bold text-gray-800 group-hover:underline">
 					{post.title}
 				</h3>

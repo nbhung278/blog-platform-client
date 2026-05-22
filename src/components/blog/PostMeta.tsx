@@ -1,5 +1,6 @@
 import type { Post } from "@/types";
 import { safeImageUrl } from "@/lib/sanitize";
+import { formatReadingTime } from "@/lib/formatReadingTime";
 
 function Avatar({ post, size = "sm" }: { post: Post; size?: "sm" | "md" }) {
 	const px = size === "md" ? 36 : 28;
@@ -35,14 +36,17 @@ function formatDate(iso: string) {
 }
 
 export default function PostMeta({ post, size = "sm" }: { post: Post; size?: "sm" | "md" }) {
+	const reading = formatReadingTime(post.readingTime);
 	return (
 		<div className="flex items-center gap-2.5">
 			<Avatar post={post} size={size} />
 			<div>
 				<p className="text-brand-dark text-sm font-medium">{post.user?.name ?? "Unknown"}</p>
-				{post.publishedAt && (
-					<p className="text-brand-mid text-xs">{formatDate(post.publishedAt)}</p>
-				)}
+				<p className="text-brand-mid text-xs">
+					{post.publishedAt && formatDate(post.publishedAt)}
+					{post.publishedAt && reading && <span aria-hidden> · </span>}
+					{reading && <span>{reading}</span>}
+				</p>
 			</div>
 		</div>
 	);

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Post } from "@/types";
+import { formatReadingTime } from "@/lib/formatReadingTime";
 
 // Approx pixels each card consumes (w-80 = 320px + gap-6 = 24px). Used to
 // compute marquee duration so the row scrolls at a constant speed regardless
@@ -129,6 +130,7 @@ interface CardProps {
 }
 
 function CarouselCard({ post, dim, onActivate }: CardProps) {
+	const reading = formatReadingTime(post.readingTime);
 	return (
 		<Link
 			to="/blog/$username/$slug"
@@ -146,7 +148,15 @@ function CarouselCard({ post, dim, onActivate }: CardProps) {
 			</h3>
 			{/* text-black/70 keeps WCAG AA contrast (~9:1) on the white card;
 			    text-black/50 was ~3:1 and failed accessibility audits. */}
-			<p className="text-xs text-black/70">{formatDate(post.publishedAt ?? post.createdAt)}</p>
+			<p className="text-xs text-black/70">
+				{formatDate(post.publishedAt ?? post.createdAt)}
+				{reading && (
+					<>
+						<span aria-hidden> · </span>
+						<span>{reading}</span>
+					</>
+				)}
+			</p>
 		</Link>
 	);
 }
