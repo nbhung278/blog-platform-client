@@ -30,7 +30,7 @@ export default function CategoryPage() {
 	const changePage = usePaginationNav((next) => navigate({ search: { page: next } }));
 
 	return (
-		<div className="flex min-h-screen flex-col bg-white font-sans">
+		<div className="dark:bg-brand-cream flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader />
 
 			<div className="bg-brand-hero px-5 py-12 text-center md:px-6 md:py-16">

@@ -49,7 +49,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
 						aria-current={p === page ? "page" : undefined}
 						className={
 							p === page
-								? "bg-brand-dark flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm font-medium text-white"
+								? "bg-brand-dark dark:text-brand-cream flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm font-medium text-white"
 								: "border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark flex h-9 min-w-9 items-center justify-center rounded-full border px-3 text-sm transition-colors"
 						}
 					>

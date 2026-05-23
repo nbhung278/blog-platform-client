@@ -79,13 +79,13 @@ export default function AboutPage() {
 					<div className="mt-8 flex flex-wrap gap-3">
 						<Link
 							to="/register"
-							className="bg-brand-dark hover:bg-brand-mid inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors"
+							className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors"
 						>
 							Create an account
 						</Link>
 						<Link
 							to="/"
-							className="border-brand-border text-brand-dark hover:bg-brand-cream inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-medium transition-colors"
+							className="border-brand-border text-brand-dark hover:bg-brand-cream dark:hover:bg-brand-hero inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-medium transition-colors"
 						>
 							Read the latest posts
 						</Link>

@@ -89,7 +89,7 @@ export default function ContactPage() {
 					</p>
 				</header>
 
-				<div className="border-brand-border mb-8 flex items-start gap-3 rounded-lg border bg-white p-4">
+				<div className="border-brand-border dark:bg-brand-hero mb-8 flex items-start gap-3 rounded-lg border bg-white p-4">
 					<Mail className="text-brand-mid mt-0.5 h-5 w-5 shrink-0" aria-hidden />
 					<div className="text-sm">
 						<p className="text-brand-dark font-medium">Prefer email?</p>
@@ -107,7 +107,7 @@ export default function ContactPage() {
 				</div>
 
 				{status === "success" ? (
-					<div className="border-brand-border rounded-lg border bg-white p-8 text-center">
+					<div className="border-brand-border dark:bg-brand-hero rounded-lg border bg-white p-8 text-center">
 						<CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-green-600" aria-hidden />
 						<h2 className="text-brand-dark font-serif text-xl font-semibold">Message sent</h2>
 						<p className="text-brand-mid mx-auto mt-2 max-w-md text-sm leading-relaxed">
@@ -125,7 +125,7 @@ export default function ContactPage() {
 				) : (
 					<form
 						onSubmit={onSubmit}
-						className="border-brand-border space-y-5 rounded-lg border bg-white p-6"
+						className="border-brand-border dark:bg-brand-hero space-y-5 rounded-lg border bg-white p-6"
 						noValidate
 					>
 						<div>
@@ -143,7 +143,7 @@ export default function ContactPage() {
 								value={name}
 								onChange={(e) => setName(e.target.value)}
 								disabled={status === "submitting"}
-								className="border-brand-border focus:border-brand-dark w-full rounded-md border px-3 py-2 text-sm transition-colors outline-none disabled:opacity-60"
+								className="border-brand-border focus:border-brand-dark dark:bg-brand-surface text-brand-dark w-full rounded-md border bg-white px-3 py-2 text-sm transition-colors outline-none disabled:opacity-60"
 								autoComplete="name"
 							/>
 						</div>
@@ -163,7 +163,7 @@ export default function ContactPage() {
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								disabled={status === "submitting"}
-								className="border-brand-border focus:border-brand-dark w-full rounded-md border px-3 py-2 text-sm transition-colors outline-none disabled:opacity-60"
+								className="border-brand-border focus:border-brand-dark dark:bg-brand-surface text-brand-dark w-full rounded-md border bg-white px-3 py-2 text-sm transition-colors outline-none disabled:opacity-60"
 								autoComplete="email"
 							/>
 						</div>
@@ -183,7 +183,7 @@ export default function ContactPage() {
 								value={message}
 								onChange={(e) => setMessage(e.target.value)}
 								disabled={status === "submitting"}
-								className="border-brand-border focus:border-brand-dark w-full resize-y rounded-md border px-3 py-2 text-sm leading-relaxed transition-colors outline-none disabled:opacity-60"
+								className="border-brand-border focus:border-brand-dark dark:bg-brand-surface text-brand-dark w-full resize-y rounded-md border bg-white px-3 py-2 text-sm leading-relaxed transition-colors outline-none disabled:opacity-60"
 							/>
 							<p className="text-brand-mid mt-1 text-xs">
 								{trimmedMessage.length < 10
@@ -220,7 +220,7 @@ export default function ContactPage() {
 						{errorMsg && (
 							<div
 								role="alert"
-								className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+								className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400"
 							>
 								{errorMsg}
 							</div>
@@ -230,7 +230,7 @@ export default function ContactPage() {
 							<button
 								type="submit"
 								disabled={!canSubmit}
-								className="bg-brand-dark hover:bg-brand-mid inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+								className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
 							>
 								<Send className="h-4 w-4" aria-hidden />
 								{status === "submitting" ? "Sending…" : "Send message"}

@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
 	};
 
 	const inputClass =
-		"w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
+		"w-full rounded-xl border border-brand-border bg-white dark:bg-brand-hero px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
 	return (
 		<AuthLayout
@@ -67,12 +67,12 @@ export default function ResetPasswordPage() {
 		>
 			<form onSubmit={handleSubmit} className="space-y-6">
 				{reset.error && (
-					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+					<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
 						{formatApiError(reset.error, "Invalid or expired code")}
 					</p>
 				)}
 				{search.dev && (
-					<p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+					<p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
 						Dev mode — code: <span className="font-mono">{search.dev}</span>
 					</p>
 				)}
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
 				<button
 					type="submit"
 					disabled={reset.isPending || !passwordOk || code.length !== 6}
-					className="bg-brand-dark hover:bg-brand-mid w-full rounded-xl py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+					className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream w-full rounded-xl py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
 				>
 					{reset.isPending ? "Updating..." : "Set new password"}
 				</button>

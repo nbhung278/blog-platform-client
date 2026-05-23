@@ -26,7 +26,7 @@ export default function ResumeReadingBanner({
 			<button
 				type="button"
 				onClick={onResume}
-				className="bg-brand-dark hover:bg-brand-mid shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-white transition-colors sm:text-sm"
+				className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-white transition-colors sm:text-sm"
 			>
 				Resume
 			</button>

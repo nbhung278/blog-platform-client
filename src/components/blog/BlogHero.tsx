@@ -22,14 +22,14 @@ export default function BlogHero() {
 	const [activeId, setActiveId] = useState<string | null>(null);
 
 	return (
-		<section className="bg-brand-cream border-b border-black/10">
+		<section className="bg-brand-cream border-b border-black/10 dark:border-white/8">
 			<div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 py-16 md:grid-cols-[1fr_2fr] md:gap-16 md:px-6 md:py-24">
 				{/* Left column — small label + tagline + CTA. Kept narrow so the
 				    eye lands on the categories first, the same hierarchy the
 				    Claude blog uses. */}
 				<div className="flex flex-col">
-					<p className="text-base font-semibold text-black">Blog</p>
-					<p className="mt-12 max-w-xs text-sm leading-relaxed text-black/70 md:mt-16">
+					<p className="text-base font-semibold text-black dark:text-white">Blog</p>
+					<p className="mt-12 max-w-xs text-sm leading-relaxed text-black/70 md:mt-16 dark:text-white/70">
 						Stories and lessons from developers building real things — the craft behind the code.
 					</p>
 					<div className="mt-6">
@@ -39,14 +39,14 @@ export default function BlogHero() {
 							<Link
 								to="/editor/$postId"
 								params={{ postId: "new" }}
-								className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black/80"
+								className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/90"
 							>
 								Start writing
 							</Link>
 						) : (
 							<Link
 								to="/register"
-								className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black/80"
+								className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/90"
 							>
 								Start writing
 							</Link>
@@ -80,7 +80,7 @@ export default function BlogHero() {
 								<div
 									key={label}
 									aria-hidden
-									className="inline-flex items-center gap-3 font-serif text-4xl leading-tight font-semibold text-black/30 md:text-6xl"
+									className="inline-flex items-center gap-3 font-serif text-4xl leading-tight font-semibold text-black/30 md:text-6xl dark:text-white/20"
 								>
 									<span>{label}</span>
 									<ArrowUpRight className="h-8 w-8 md:h-10 md:w-10" strokeWidth={1.5} aria-hidden />
@@ -100,7 +100,7 @@ export default function BlogHero() {
 											opacity: dim ? 0.3 : 1,
 											transition: "opacity 300ms ease, color 200ms ease",
 										}}
-										className="group inline-flex items-center gap-3 font-serif text-4xl leading-tight font-semibold text-black md:text-6xl"
+										className="group dark:text-brand-dark inline-flex items-center gap-3 font-serif text-4xl leading-tight font-semibold text-black md:text-6xl"
 									>
 										<span className="capitalize">{cat.name}</span>
 										{/* Arrow weight matches the headline so it reads as

@@ -125,7 +125,7 @@ export default function ShareModal({ open, onClose, url, title, shareUrl }: Prop
 			onClick={onClose}
 		>
 			<div
-				className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+				className="dark:bg-brand-surface w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:shadow-black/60"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="mb-4 flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function ShareModal({ open, onClose, url, title, shareUrl }: Prop
 				<button
 					type="button"
 					onClick={copyLink}
-					className="border-brand-border hover:bg-brand-hero flex w-full items-center gap-3 rounded-lg border bg-white px-3 py-2.5 text-left text-sm transition-colors"
+					className="border-brand-border hover:bg-brand-hero dark:bg-brand-hero/60 flex w-full items-center gap-3 rounded-lg border bg-white px-3 py-2.5 text-left text-sm transition-colors"
 				>
 					{copied ? (
 						<Check className="text-brand h-5 w-5 shrink-0" />
@@ -175,7 +175,7 @@ export default function ShareModal({ open, onClose, url, title, shareUrl }: Prop
 								target="_blank"
 								rel="noreferrer noopener"
 								aria-label={label}
-								className={`border-brand-border hover:border-brand-mid flex flex-col items-center gap-1.5 rounded-lg border bg-white px-2 py-3 text-gray-600 transition-colors ${brand}`}
+								className={`border-brand-border hover:border-brand-mid dark:bg-brand-hero dark:text-brand-mid flex flex-col items-center gap-1.5 rounded-lg border bg-white px-2 py-3 text-gray-600 transition-colors ${brand}`}
 							>
 								<Icon />
 							</a>

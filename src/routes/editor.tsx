@@ -24,7 +24,7 @@ import { notify } from "@/lib/notify";
 import type { PostStatus } from "@/types";
 
 const INPUT_CLASS =
-	"w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
+	"w-full rounded-lg border border-brand-border bg-white dark:bg-brand-hero px-3 py-2 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
 // Mirrors the backend caps; keep in sync.
 const MAX_CATEGORIES = 3;
@@ -433,7 +433,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 						<button
 							type="button"
 							onClick={() => setShowPreview(true)}
-							className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors"
+							className="border-brand-border text-brand-dark hover:bg-brand-hero dark:bg-brand-surface flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors"
 						>
 							<Eye className="h-4 w-4" />
 							<span className="hidden sm:inline">Preview</span>
@@ -459,7 +459,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 								type="button"
 								onClick={() => save(status)}
 								disabled={submitting || formInvalid}
-								className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors disabled:opacity-60"
+								className="border-brand-border text-brand-dark hover:bg-brand-hero dark:bg-brand-surface flex items-center gap-1.5 rounded-lg border bg-white px-3 py-2 text-sm transition-colors disabled:opacity-60"
 							>
 								<Save className="h-4 w-4" />
 								<span className="hidden sm:inline">Save changes</span>
@@ -470,7 +470,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 								type="button"
 								onClick={() => save("pending")}
 								disabled={submitting || formInvalid}
-								className="bg-brand-dark hover:bg-brand-mid flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-white transition-colors disabled:opacity-60"
+								className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-white transition-colors disabled:opacity-60 dark:hover:opacity-90"
 							>
 								<Send className="h-4 w-4" />
 								<span className="hidden sm:inline">Submit for review</span>
@@ -556,7 +556,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 										type="button"
 										disabled={submitting}
 										onClick={() => fileInputRef.current?.click()}
-										className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1 rounded-lg border bg-white px-2.5 py-2 text-xs transition-colors disabled:opacity-60"
+										className="border-brand-border text-brand-dark hover:bg-brand-hero dark:bg-brand-surface flex items-center gap-1 rounded-lg border bg-white px-2.5 py-2 text-xs transition-colors disabled:opacity-60"
 									>
 										<Upload className="h-3.5 w-3.5" />
 										Upload
@@ -667,7 +667,7 @@ function EditorScreen({ postId: initialPostId }: { mode: "new" | "edit"; postId?
 					role="dialog"
 					aria-modal="true"
 					aria-label="Post preview"
-					className="fixed inset-0 z-50 overflow-y-auto bg-white"
+					className="dark:bg-brand-cream fixed inset-0 z-50 overflow-y-auto bg-white"
 				>
 					<div className="border-brand-border bg-brand-cream sticky top-0 z-10 border-b">
 						<div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-2">

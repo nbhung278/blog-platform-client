@@ -2,6 +2,7 @@ import { type ReactNode, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { PenLine } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
+import { useThemeStore } from "@/stores/theme.store";
 import { useLogout } from "@/hooks/useAuth";
 import { useCategories } from "@/hooks/usePosts";
 import { useConversations } from "@/hooks/useChat";
@@ -14,17 +15,70 @@ interface SiteHeaderProps {
 }
 
 const MOBILE_NAV_LINK_CLASS =
-	"text-black hover:bg-brand-hero w-full px-6 py-3 text-base font-medium transition-colors";
+	"text-black dark:text-white hover:bg-brand-hero w-full px-6 py-3 text-base font-medium transition-colors";
 
 // Shared style for top-level nav buttons/links — keep weight medium (Claude-
 // style: dark text but not bold) so the row reads as quiet nav, not headlines.
 const DESKTOP_NAV_LINK_CLASS =
-	"text-black/80 hover:text-black flex items-center gap-1 text-sm font-medium transition-colors";
+	"text-black/80 dark:text-white/80 hover:text-black dark:hover:text-white flex items-center gap-1 text-sm font-medium transition-colors";
+
+function SunIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			strokeLinecap="round"
+		>
+			<circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.12" />
+			<circle cx="12" cy="12" r="4" />
+			<path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22" />
+			<path d="M5.05 5.05l1.77 1.77M17.18 17.18l1.77 1.77M18.95 5.05l-1.77 1.77M6.82 17.18l-1.77 1.77" />
+		</svg>
+	);
+}
+
+function MoonIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			viewBox="0 0 24 24"
+			fill="currentColor"
+			fillOpacity="0.12"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+		>
+			<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+		</svg>
+	);
+}
+
+function ThemeToggle() {
+	const { theme, toggle } = useThemeStore();
+	const isDark = theme === "dark";
+	return (
+		<button
+			onClick={toggle}
+			aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+			className="flex h-8 w-8 items-center justify-center rounded-full text-black/60 transition-all hover:bg-black/6 dark:text-white/60 dark:hover:bg-white/10"
+		>
+			{isDark ? (
+				<SunIcon className="h-[18px] w-[18px]" />
+			) : (
+				<MoonIcon className="h-[18px] w-[18px]" />
+			)}
+		</button>
+	);
+}
 
 function SearchIcon() {
 	return (
 		<svg
-			className="h-4 w-4 shrink-0 text-black/60"
+			className="h-4 w-4 shrink-0 text-black/60 dark:text-white/60"
 			fill="none"
 			viewBox="0 0 24 24"
 			stroke="currentColor"
@@ -58,7 +112,7 @@ function ChatIcon() {
 	return (
 		<Link
 			to="/chat"
-			className="relative text-black/80 transition-colors hover:text-black"
+			className="relative text-black/80 transition-colors hover:text-black dark:text-white/80 dark:hover:text-white"
 			aria-label="Messages"
 		>
 			<svg
@@ -110,8 +164,8 @@ function SearchBar({
 		<form
 			className={
 				isBlock
-					? "bg-brand-surface flex w-full items-center gap-2 rounded-md border border-black/15 px-3 py-2.5"
-					: "flex items-center gap-2 rounded-full border border-black/15 px-4 py-2"
+					? "bg-brand-surface flex w-full items-center gap-2 rounded-md border border-black/15 px-3 py-2.5 dark:border-white/10"
+					: "flex items-center gap-2 rounded-full border border-black/15 px-4 py-2 dark:border-white/10"
 			}
 			onSubmit={(e) => {
 				e.preventDefault();
@@ -125,7 +179,7 @@ function SearchBar({
 				placeholder="Search Strix…"
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
-				className={`bg-transparent text-sm text-black outline-none placeholder:text-black/40 ${
+				className={`bg-transparent text-sm text-black outline-none placeholder:text-black/40 dark:text-white dark:placeholder:text-white/40 ${
 					isBlock ? "min-w-0 flex-1" : "w-36"
 				}`}
 			/>
@@ -173,7 +227,7 @@ function CategoriesDropdown({ categories }: { categories: CategoryItem[] }) {
 			</button>
 
 			{open && (
-				<div className="bg-brand-surface absolute top-full left-0 z-50 mt-3 min-w-[220px] overflow-hidden rounded-lg border border-black/10 shadow-xl">
+				<div className="bg-brand-surface absolute top-full left-0 z-50 mt-3 min-w-[220px] overflow-hidden rounded-lg border border-black/10 shadow-xl dark:border-white/10 dark:shadow-black/50">
 					{categories.length === 0 ? (
 						<p className="text-brand-mid px-4 py-3 text-sm">No categories yet</p>
 					) : (
@@ -209,7 +263,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 	}
 
 	return (
-		<header className="bg-brand-cream sticky top-0 z-50 border-b border-black/10">
+		<header className="bg-brand-cream sticky top-0 z-50 border-b border-black/10 dark:border-white/8">
 			<div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-2.5 md:px-6 md:py-3">
 				<Link
 					to="/"
@@ -257,19 +311,21 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 							) : (
 								<Link
 									to="/login"
-									className="text-sm font-medium text-black/80 transition-colors hover:text-black"
+									className="text-sm font-medium text-black/80 transition-colors hover:text-black dark:text-white/80 dark:hover:text-white"
 									aria-label="Login"
 								>
 									Login
 								</Link>
 							)}
+							<ThemeToggle />
 						</>
 					)}
 				</div>
 
-				<div className="flex justify-end md:hidden">
+				<div className="flex items-center gap-1 md:hidden">
+					<ThemeToggle />
 					<button
-						className="p-1 text-black/80"
+						className="p-1 text-black/80 dark:text-white/80"
 						onClick={() => setMobileOpen((o) => !o)}
 						aria-label="Toggle menu"
 					>
@@ -279,7 +335,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 			</div>
 
 			{mobileOpen && (
-				<div className="bg-brand-cream flex flex-col border-t border-black/10 md:hidden">
+				<div className="bg-brand-cream flex flex-col border-t border-black/10 md:hidden dark:border-white/8">
 					{user && (
 						<div className="flex items-center gap-3 border-b border-black/5 px-6 py-4">
 							{user.avatarUrl ? (
@@ -292,7 +348,7 @@ export default function SiteHeader({ navContent }: SiteHeaderProps) {
 									className="h-10 w-10 rounded-full object-cover"
 								/>
 							) : (
-								<div className="bg-brand-dark flex h-10 w-10 items-center justify-center rounded-full font-serif text-base font-semibold text-white">
+								<div className="bg-brand-dark dark:text-brand-cream flex h-10 w-10 items-center justify-center rounded-full font-serif text-base font-semibold text-white">
 									{user.name[0]?.toUpperCase()}
 								</div>
 							)}

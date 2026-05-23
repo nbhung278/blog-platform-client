@@ -15,7 +15,7 @@ export default function GoogleButton({ label = "Continue with Google", disabled 
 		<a
 			href={disabled ? undefined : GOOGLE_START_URL}
 			aria-disabled={disabled}
-			className="border-brand-border text-brand-dark hover:bg-brand-cream flex w-full items-center justify-center gap-3 rounded-xl border bg-white px-4 py-3 text-sm font-medium transition-colors aria-disabled:pointer-events-none aria-disabled:opacity-60"
+			className="border-brand-border text-brand-dark hover:bg-brand-cream dark:hover:bg-brand-hero dark:bg-brand-surface flex w-full items-center justify-center gap-3 rounded-xl border bg-white px-4 py-3 text-sm font-medium transition-colors aria-disabled:pointer-events-none aria-disabled:opacity-60"
 		>
 			<GoogleLogo />
 			<span>{label}</span>

@@ -182,7 +182,7 @@ export default function SearchPage() {
 	);
 
 	return (
-		<div className="flex min-h-screen flex-col bg-white font-sans">
+		<div className="dark:bg-brand-cream flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader />
 
 			{/* Banner */}

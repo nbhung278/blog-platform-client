@@ -208,7 +208,7 @@ function MessageBubble({
 						)}
 						<button
 							type="button"
-							className="w-full px-3 py-1.5 text-left text-sm text-red-500 hover:bg-red-50"
+							className="dark:hover:bg-brand-hero w-full px-3 py-1.5 text-left text-sm text-red-500 hover:bg-red-50"
 							onClick={() => {
 								setShowActions(false);
 								setShowDeleteMenu(true);
@@ -225,7 +225,7 @@ function MessageBubble({
 					>
 						<button
 							type="button"
-							className="w-full px-3 py-1.5 text-left text-sm text-red-500 hover:bg-red-50"
+							className="dark:hover:bg-brand-hero w-full px-3 py-1.5 text-left text-sm text-red-500 hover:bg-red-50"
 							onClick={() => {
 								onDelete(message.id, "me");
 								setShowDeleteMenu(false);
@@ -236,7 +236,7 @@ function MessageBubble({
 						{isOwn && (
 							<button
 								type="button"
-								className="w-full px-3 py-1.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+								className="dark:hover:bg-brand-hero w-full px-3 py-1.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
 								onClick={() => {
 									onDelete(message.id, "all");
 									setShowDeleteMenu(false);
@@ -350,7 +350,7 @@ function MessageBubble({
 							<div
 								className={`relative z-10 -mt-2.5 flex ${isOwn ? "justify-end" : "justify-start"}`}
 							>
-								<div className="border-brand-border flex items-center gap-0.5 rounded-full border bg-white px-1 py-0.5 shadow-sm">
+								<div className="border-brand-border dark:bg-brand-surface flex items-center gap-0.5 rounded-full border bg-white px-1 py-0.5 shadow-sm">
 									{message.reactions.map((r) => {
 										const def = REACTION_EMOJIS.find((e) => e.emoji === r.emoji);
 										return (

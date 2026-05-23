@@ -73,7 +73,7 @@ export default function PostCarousel({ posts }: PostCarouselProps) {
 	// the hooks to satisfy the rules-of-hooks lint rule.
 	if (posts.length === 0) {
 		return (
-			<div className="bg-brand-cream relative overflow-hidden border-b border-black/10 py-12">
+			<div className="bg-brand-cream relative overflow-hidden border-b border-black/10 py-12 dark:border-white/8">
 				<div className="h-44" aria-hidden />
 			</div>
 		);
@@ -97,7 +97,7 @@ export default function PostCarousel({ posts }: PostCarouselProps) {
 	return (
 		<div
 			ref={wrapperRef}
-			className="bg-brand-cream relative overflow-hidden border-b border-black/10 py-12"
+			className="bg-brand-cream relative overflow-hidden border-b border-black/10 py-12 dark:border-white/8"
 			onMouseLeave={() => setActiveId(null)}
 		>
 			<div
@@ -141,14 +141,14 @@ function CarouselCard({ post, dim, onActivate }: CardProps) {
 				opacity: dim ? 0.35 : 1,
 				transition: "opacity 300ms ease, border-color 200ms ease",
 			}}
-			className="flex h-44 w-80 shrink-0 flex-col justify-between rounded-lg border border-black/10 bg-white p-5 hover:border-black/30 focus-visible:border-black/40"
+			className="dark:border-brand-border dark:bg-brand-surface flex h-44 w-80 shrink-0 flex-col justify-between rounded-lg border border-black/10 bg-white p-5 hover:border-black/30 focus-visible:border-black/40 dark:hover:border-white/20"
 		>
-			<h3 className="line-clamp-3 font-serif text-lg leading-snug font-semibold text-black">
+			<h3 className="dark:text-brand-dark line-clamp-3 font-serif text-lg leading-snug font-semibold text-black">
 				{post.title}
 			</h3>
 			{/* text-black/70 keeps WCAG AA contrast (~9:1) on the white card;
 			    text-black/50 was ~3:1 and failed accessibility audits. */}
-			<p className="text-xs text-black/70">
+			<p className="dark:text-brand-mid text-xs text-black/70">
 				{formatDate(post.publishedAt ?? post.createdAt)}
 				{reading && (
 					<>

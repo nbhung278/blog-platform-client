@@ -212,7 +212,7 @@ export default function ConversationList({ activeConversationId }: Props) {
 								<button
 									type="button"
 									onClick={() => setShowNewChat(true)}
-									className="bg-brand-dark hover:bg-brand-mid rounded-full px-4 py-2 text-sm font-medium text-white transition-colors"
+									className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream rounded-full px-4 py-2 text-sm font-medium text-white transition-colors"
 								>
 									Find people
 								</button>

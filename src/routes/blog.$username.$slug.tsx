@@ -57,9 +57,11 @@ function SidebarSection({ title, children }: { title: string; children: React.Re
 	return (
 		<div>
 			<div className="mb-4 flex items-center gap-3">
-				<div className="h-px flex-1 bg-gray-200" />
-				<h3 className="text-xs font-semibold tracking-widest text-gray-400 uppercase">{title}</h3>
-				<div className="h-px flex-1 bg-gray-200" />
+				<div className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+				<h3 className="dark:text-brand-mid text-xs font-semibold tracking-widest text-gray-400 uppercase">
+					{title}
+				</h3>
+				<div className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
 			</div>
 			{children}
 		</div>
@@ -166,7 +168,7 @@ export default function BlogPostPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex min-h-screen flex-col bg-white font-sans">
+			<div className="dark:bg-brand-cream flex min-h-screen flex-col bg-white font-sans">
 				<SiteHeader />
 				<PostDetailSkeleton />
 				<SiteFooter />
@@ -176,7 +178,7 @@ export default function BlogPostPage() {
 	if (isError || !post) {
 		return (
 			<div className="flex min-h-screen flex-col items-center justify-center gap-4 font-sans">
-				<p className="font-serif text-2xl text-gray-600">Post not found.</p>
+				<p className="dark:text-brand-mid font-serif text-2xl text-gray-600">Post not found.</p>
 				<Link to="/" className="text-brand text-sm underline underline-offset-2">
 					← Back to home
 				</Link>
@@ -189,7 +191,7 @@ export default function BlogPostPage() {
 	const safeCoverUrl = safeImageUrl(post.coverUrl);
 
 	return (
-		<div className="flex min-h-screen flex-col bg-white font-sans">
+		<div className="dark:bg-brand-cream flex min-h-screen flex-col bg-white font-sans">
 			<SiteHeader />
 
 			{/* Cover image */}
@@ -228,7 +230,7 @@ export default function BlogPostPage() {
 								{post.tags.map((tag) => (
 									<span
 										key={tag}
-										className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium tracking-wide text-gray-500 uppercase"
+										className="dark:text-brand-mid rounded-full border border-gray-200 px-3 py-1 text-xs font-medium tracking-wide text-gray-500 uppercase dark:border-white/15"
 									>
 										{tag}
 									</span>
@@ -236,7 +238,7 @@ export default function BlogPostPage() {
 							</div>
 						)}
 
-						<h1 className="post-title text-4xl leading-tight font-bold wrap-break-word text-[#1a1a1a] md:text-5xl">
+						<h1 className="post-title dark:text-brand-dark text-4xl leading-tight font-bold wrap-break-word text-[#1a1a1a] md:text-5xl">
 							{post.title}
 						</h1>
 
@@ -258,10 +260,10 @@ export default function BlogPostPage() {
 									</div>
 								)}
 								<div className="min-w-0 flex-1">
-									<p className="truncate text-sm font-semibold text-gray-800 group-hover:underline">
+									<p className="dark:text-brand-dark truncate text-sm font-semibold text-gray-800 group-hover:underline">
 										By {post.user?.name ?? username}
 									</p>
-									<p className="text-xs text-gray-400">{formatDate(date)}</p>
+									<p className="dark:text-brand-mid text-xs text-gray-400">{formatDate(date)}</p>
 								</div>
 							</Link>
 							<FollowButton username={username} />
@@ -277,7 +279,9 @@ export default function BlogPostPage() {
 						</div>
 
 						{post.excerpt && (
-							<p className="mt-6 text-lg leading-relaxed text-gray-500">{post.excerpt}</p>
+							<p className="dark:text-brand-mid mt-6 text-lg leading-relaxed text-gray-500">
+								{post.excerpt}
+							</p>
 						)}
 
 						<div
@@ -293,7 +297,7 @@ export default function BlogPostPage() {
 									{post.tags.map((tag) => (
 										<span
 											key={tag}
-											className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700"
+											className="dark:bg-brand-hero dark:text-brand-mid rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700"
 										>
 											{tag}
 										</span>

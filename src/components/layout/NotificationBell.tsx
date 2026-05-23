@@ -51,7 +51,7 @@ export default function NotificationBell() {
 		<div ref={ref} className="relative">
 			<button
 				onClick={() => setOpen((o) => !o)}
-				className="text-brand-mid hover:text-brand-dark relative p-1.5 transition-colors"
+				className="text-brand-mid hover:text-brand-dark relative p-1.5 transition-colors dark:text-white/80 dark:hover:text-white"
 				aria-label="Notifications"
 			>
 				<Bell className="h-5 w-5" />

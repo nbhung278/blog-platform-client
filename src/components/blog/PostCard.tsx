@@ -13,7 +13,7 @@ const PostCard = memo(function PostCard({ post, username }: PostCardProps) {
 		<Link
 			to="/blog/$username/$slug"
 			params={{ username, slug: post.slug }}
-			className="group block overflow-hidden rounded-lg border bg-white transition hover:shadow-md"
+			className="group dark:border-brand-border dark:bg-brand-surface block overflow-hidden rounded-lg border bg-white transition hover:shadow-md"
 		>
 			{post.coverUrl && (
 				<img
@@ -27,18 +27,23 @@ const PostCard = memo(function PostCard({ post, username }: PostCardProps) {
 				/>
 			)}
 			<div className="p-6">
-				<h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-700">
+				<h2 className="dark:text-brand-dark text-xl font-semibold text-gray-900 group-hover:text-blue-700 dark:group-hover:text-blue-400">
 					{post.title}
 				</h2>
-				{post.excerpt && <p className="mt-2 line-clamp-2 text-gray-600">{post.excerpt}</p>}
-				<div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+				{post.excerpt && (
+					<p className="dark:text-brand-mid mt-2 line-clamp-2 text-gray-600">{post.excerpt}</p>
+				)}
+				<div className="dark:text-brand-mid mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-500">
 					<time>{new Date(date).toLocaleDateString()}</time>
 					<span>·</span>
 					<span>{post.readingTime} min read</span>
 					<span>·</span>
 					<span>{post.viewCount} views</span>
 					{post.tags.slice(0, 3).map((tag) => (
-						<span key={tag} className="rounded bg-gray-100 px-2 py-0.5 text-gray-700">
+						<span
+							key={tag}
+							className="dark:bg-brand-hero dark:text-brand-mid rounded bg-gray-100 px-2 py-0.5 text-gray-700"
+						>
 							#{tag}
 						</span>
 					))}

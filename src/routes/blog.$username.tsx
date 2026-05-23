@@ -80,7 +80,7 @@ export default function BlogUserPage() {
 										className="ring-brand-hero h-24 w-24 rounded-full object-cover ring-4 ring-offset-2 ring-offset-white"
 									/>
 								) : (
-									<div className="bg-brand-dark ring-brand-hero flex h-24 w-24 items-center justify-center rounded-full font-serif text-3xl font-bold text-white ring-4 ring-offset-2 ring-offset-white">
+									<div className="bg-brand-dark ring-brand-hero dark:text-brand-cream flex h-24 w-24 items-center justify-center rounded-full font-serif text-3xl font-bold text-white ring-4 ring-offset-2 ring-offset-white">
 										{initial}
 									</div>
 								)}
@@ -115,7 +115,7 @@ export default function BlogUserPage() {
 									<Link
 										to="/editor/$postId"
 										params={{ postId: "new" }}
-										className="bg-brand-dark hover:bg-brand-mid block w-full rounded-full py-2 text-center text-sm font-medium text-white transition-colors"
+										className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream block w-full rounded-full py-2 text-center text-sm font-medium text-white transition-colors"
 									>
 										+ New post
 									</Link>
@@ -135,7 +135,7 @@ export default function BlogUserPage() {
 											disabled={startConversation.isPending}
 											aria-label="Send message"
 											title="Send message"
-											className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark flex h-9 w-9 items-center justify-center rounded-full border bg-white transition-colors disabled:opacity-60"
+											className="border-brand-border text-brand-mid hover:bg-brand-hero hover:text-brand-dark dark:bg-brand-surface flex h-9 w-9 items-center justify-center rounded-full border bg-white transition-colors disabled:opacity-60"
 										>
 											<Mail className="h-4 w-4" />
 										</button>
@@ -179,7 +179,7 @@ export default function BlogUserPage() {
 									<Link
 										to="/editor/$postId"
 										params={{ postId: "new" }}
-										className="bg-brand-dark hover:bg-brand-mid mt-6 inline-block px-6 py-2 text-sm text-white transition-colors"
+										className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream mt-6 inline-block px-6 py-2 text-sm text-white transition-colors"
 									>
 										Write your first post
 									</Link>

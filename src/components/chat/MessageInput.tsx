@@ -202,7 +202,7 @@ export default function MessageInput({
 					type="button"
 					onClick={handleSend}
 					disabled={!text.trim() || disabled}
-					className="bg-brand hover:bg-brand-dark mb-1 shrink-0 rounded-full p-1.5 text-white transition-colors disabled:opacity-40"
+					className="bg-brand hover:bg-brand-dark dark:hover:bg-brand-mid mb-1 shrink-0 rounded-full p-1.5 text-white transition-colors disabled:opacity-40"
 					aria-label={isEditing ? "Save edit" : "Send message"}
 				>
 					{isEditing ? (

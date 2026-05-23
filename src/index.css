@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "highlight.js/styles/github-dark.css";
 
+/* Class-based dark mode for Tailwind v4: apply `dark:` variants when any
+   ancestor has the `.dark` class (toggled via JS on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
 	button:not(:disabled),
 	[role="button"]:not(:disabled),
@@ -225,6 +229,17 @@
 	--color-brand-surface: #faf8f4;
 }
 
+/* Dark mode: flip brand CSS variables so every utility that uses them
+   (bg-brand-cream, text-brand-dark, etc.) automatically adapts. */
+.dark {
+	--color-brand-cream: #141413;
+	--color-brand-surface: #1f1e1d;
+	--color-brand-hero: #252422;
+	--color-brand-dark: #faf9f5;
+	--color-brand-mid: #a89585;
+	--color-brand-border: rgb(255 255 255 / 0.1);
+}
+
 /* Right-to-left marquee for the home page post carousel. The track holds
    two copies of the post list and animates from 0 to -50% so the seam at
    the end is the start of the second copy. Speed (60s) is set inline. */
@@ -403,6 +418,54 @@
 	border: none;
 	border-top: 1px solid rgb(229 231 235);
 	margin: 2rem 0;
+}
+
+/* Dark mode overrides for post-content (rendered Tiptap HTML) */
+.dark .post-content {
+	color: #e8e3da;
+}
+.dark .post-content blockquote {
+	border-left-color: rgb(255 255 255 / 0.2);
+	color: #a89585;
+}
+.dark .post-content code {
+	background: #252422;
+	color: #e8e3da;
+}
+.dark .post-content a {
+	color: #7ba7e8;
+}
+.dark .post-content a:hover {
+	color: #93b9f2;
+}
+.dark .post-content hr {
+	border-top-color: rgb(255 255 255 / 0.1);
+}
+.dark .post-content > p:first-of-type::first-letter {
+	color: #e8e3da;
+}
+.dark .post-content h1,
+.dark .post-content h2,
+.dark .post-content h3 {
+	color: #faf9f5;
+}
+
+/* Dark mode for Tiptap editor */
+.dark .tiptap {
+	color: #e8e3da;
+}
+.dark .tiptap code {
+	background: #252422;
+	color: #e8e3da;
+}
+.dark .tiptap blockquote {
+	border-left-color: rgb(255 255 255 / 0.2);
+	color: #a89585;
+}
+.dark .tiptap-bubble-menu {
+	background: #1f1e1d;
+	border-color: rgb(255 255 255 / 0.12);
+	color: #faf9f5;
 }
 
 /* Drop cap on first paragraph of article */

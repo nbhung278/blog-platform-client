@@ -329,7 +329,7 @@ export default function PostEditor({ value, onChange, placeholder }: PostEditorP
 	if (!editor) return null;
 
 	return (
-		<div className="border-brand-border overflow-hidden rounded-xl border bg-white">
+		<div className="border-brand-border dark:bg-brand-surface overflow-hidden rounded-xl border bg-white">
 			<MainToolbar
 				editor={editor}
 				onPickImage={pickAndUpload}
@@ -660,12 +660,12 @@ function FloatingInsertMenu({
 				type="button"
 				onClick={() => setOpen((o) => !o)}
 				title="Insert"
-				className="border-brand-border hover:bg-brand-hero text-brand-mid flex size-8 items-center justify-center rounded-full border bg-white transition-colors"
+				className="border-brand-border hover:bg-brand-hero text-brand-mid dark:bg-brand-surface flex size-8 items-center justify-center rounded-full border bg-white transition-colors"
 			>
 				<Plus className={`size-4 transition-transform ${open ? "rotate-45" : ""}`} />
 			</button>
 			{open && (
-				<div className="border-brand-border absolute top-0 left-10 z-30 flex items-center gap-0.5 rounded-md border bg-white p-1 shadow-lg">
+				<div className="border-brand-border dark:bg-brand-surface absolute top-0 left-10 z-30 flex items-center gap-0.5 rounded-md border bg-white p-1 shadow-lg dark:shadow-black/40">
 					<TbBtn
 						onClick={() => {
 							editor.chain().focus().toggleHeading({ level: 1 }).run();
@@ -774,7 +774,7 @@ function ColorPicker({ editor }: { editor: Editor }) {
 			{open && (
 				<div
 					onClick={(e) => e.stopPropagation()}
-					className="border-brand-border absolute top-9 left-0 z-30 grid grid-cols-3 gap-1 rounded-md border bg-white p-2 shadow-lg"
+					className="border-brand-border dark:bg-brand-surface absolute top-9 left-0 z-30 grid grid-cols-3 gap-1 rounded-md border bg-white p-2 shadow-lg dark:shadow-black/40"
 				>
 					{TEXT_COLORS.map((c) => (
 						<button
@@ -830,7 +830,7 @@ function TableMenu({ editor }: { editor: Editor }) {
 			{open && (
 				<div
 					onClick={(e) => e.stopPropagation()}
-					className="border-brand-border absolute top-9 left-0 z-30 flex flex-col gap-0.5 rounded-md border bg-white p-1 shadow-lg"
+					className="border-brand-border dark:bg-brand-surface absolute top-9 left-0 z-30 flex flex-col gap-0.5 rounded-md border bg-white p-1 shadow-lg dark:shadow-black/40"
 				>
 					{!inTable && (
 						<MenuItem

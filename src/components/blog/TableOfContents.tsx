@@ -30,8 +30,8 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
 	if (headings.length === 0) return null;
 
 	return (
-		<nav className="mb-8 rounded-lg border bg-gray-50 p-4">
-			<h3 className="mb-2 font-semibold">Table of Contents</h3>
+		<nav className="dark:border-brand-border dark:bg-brand-surface mb-8 rounded-lg border bg-gray-50 p-4">
+			<h3 className="dark:text-brand-dark mb-2 font-semibold">Table of Contents</h3>
 			<ul className="space-y-1 text-sm">
 				{headings.map((h, i) => (
 					<li key={i} style={{ paddingLeft: `${(h.level - 1) * 16}px` }}>

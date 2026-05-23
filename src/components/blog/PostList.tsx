@@ -8,7 +8,7 @@ interface PostListProps {
 
 export default function PostList({ posts, username }: PostListProps) {
 	if (posts.length === 0) {
-		return <p className="text-gray-500">No posts yet.</p>;
+		return <p className="dark:text-brand-mid text-gray-500">No posts yet.</p>;
 	}
 
 	return (

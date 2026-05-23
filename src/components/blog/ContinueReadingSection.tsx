@@ -90,7 +90,7 @@ function ContinueReadingCard({ item }: { item: ContinueReadingItem }) {
 					dismiss.mutate(item.post.id);
 				}}
 				aria-label="Remove from continue reading"
-				className="text-brand-mid hover:bg-brand-dark absolute top-2 right-2 rounded-full bg-white/80 p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
+				className="text-brand-mid hover:bg-brand-dark dark:hover:bg-brand-hero dark:hover:text-brand-dark absolute top-2 right-2 rounded-full bg-white/80 p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
 			>
 				<X className="h-3.5 w-3.5" />
 			</button>

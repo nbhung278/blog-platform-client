@@ -37,8 +37,8 @@ function SavedScreen() {
 				)}
 
 				{!isLoading && items.length === 0 && (
-					<div className="border-brand-border rounded-lg border border-dashed bg-white px-6 py-16 text-center">
-						<Bookmark className="mx-auto mb-4 h-10 w-10 text-gray-300" />
+					<div className="border-brand-border dark:bg-brand-surface rounded-lg border border-dashed bg-white px-6 py-16 text-center">
+						<Bookmark className="mx-auto mb-4 h-10 w-10 text-gray-300 dark:text-white/20" />
 						<p className="text-brand-mid">You haven’t saved any posts yet.</p>
 						<Link
 							to="/"
@@ -85,7 +85,7 @@ function SavedPostCard({ post }: { post: SavedPost }) {
 	};
 
 	return (
-		<article className="border-brand-border group relative flex gap-5 overflow-hidden rounded-lg border bg-white p-5 transition hover:shadow-md">
+		<article className="border-brand-border group dark:bg-brand-surface relative flex gap-5 overflow-hidden rounded-lg border bg-white p-5 transition hover:shadow-md dark:hover:shadow-black/40">
 			{post.coverUrl && (
 				<Link
 					to="/blog/$username/$slug"
@@ -110,7 +110,9 @@ function SavedPostCard({ post }: { post: SavedPost }) {
 						{post.title}
 					</h2>
 					{post.excerpt && (
-						<p className="mt-2 line-clamp-2 text-sm text-gray-600">{post.excerpt}</p>
+						<p className="dark:text-brand-mid mt-2 line-clamp-2 text-sm text-gray-600">
+							{post.excerpt}
+						</p>
 					)}
 				</Link>
 				<div className="text-brand-mid mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -133,7 +135,7 @@ function SavedPostCard({ post }: { post: SavedPost }) {
 				onClick={onUnsave}
 				disabled={toggle.isPending}
 				aria-label="Remove from saved"
-				className="self-start rounded-full p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+				className="dark:text-brand-mid self-start rounded-full p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-900/20"
 			>
 				<BookmarkX className="h-4 w-4" />
 			</button>

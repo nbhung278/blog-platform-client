@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function SavedPostCardSkeleton() {
 	return (
-		<div className="border-brand-border flex gap-5 overflow-hidden rounded-lg border bg-white p-5">
+		<div className="border-brand-border dark:bg-brand-surface flex gap-5 overflow-hidden rounded-lg border bg-white p-5">
 			<Skeleton className="h-32 w-48 shrink-0 rounded" />
 			<div className="min-w-0 flex-1">
 				<Skeleton className="h-5 w-3/4 rounded" />

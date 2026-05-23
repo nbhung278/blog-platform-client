@@ -27,7 +27,7 @@ const SidebarRecentCard = memo(function SidebarRecentCard({ post }: { post: Post
 				</div>
 			)}
 			<div className="mt-3">
-				<p className="text-xs text-gray-400">
+				<p className="dark:text-brand-mid text-xs text-gray-400">
 					By {post.user?.name ?? "Unknown"}
 					{reading && (
 						<>
@@ -36,11 +36,13 @@ const SidebarRecentCard = memo(function SidebarRecentCard({ post }: { post: Post
 						</>
 					)}
 				</p>
-				<h3 className="mt-1 line-clamp-2 font-serif text-sm leading-snug font-bold text-gray-800 group-hover:underline">
+				<h3 className="dark:text-brand-dark mt-1 line-clamp-2 font-serif text-sm leading-snug font-bold text-gray-800 group-hover:underline">
 					{post.title}
 				</h3>
 				{post.excerpt && (
-					<p className="mt-1 line-clamp-2 text-xs leading-relaxed text-gray-500">{post.excerpt}</p>
+					<p className="dark:text-brand-mid mt-1 line-clamp-2 text-xs leading-relaxed text-gray-500">
+						{post.excerpt}
+					</p>
 				)}
 			</div>
 		</Link>

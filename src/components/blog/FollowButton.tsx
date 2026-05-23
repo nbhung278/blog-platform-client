@@ -40,7 +40,7 @@ export default function FollowButton({ username }: FollowButtonProps) {
 		return (
 			<button
 				onClick={() => navigate({ to: "/login" })}
-				className="bg-brand-dark hover:bg-brand-mid rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
+				className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
 			>
 				Follow
 			</button>
@@ -56,7 +56,7 @@ export default function FollowButton({ username }: FollowButtonProps) {
 			<button
 				onClick={() => follow.mutate()}
 				disabled={follow.isPending || stateQuery.isLoading}
-				className="bg-brand-dark hover:bg-brand-mid rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-60"
+				className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-60"
 			>
 				{follow.isPending ? "Following…" : "Follow"}
 			</button>
@@ -67,7 +67,7 @@ export default function FollowButton({ username }: FollowButtonProps) {
 		<div ref={ref} className="relative">
 			<button
 				onClick={() => setOpen((o) => !o)}
-				className="border-brand-border text-brand-dark hover:bg-brand-hero flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-sm font-medium transition-colors"
+				className="border-brand-border text-brand-dark hover:bg-brand-hero dark:bg-brand-surface flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-sm font-medium transition-colors"
 			>
 				<Check className="h-3.5 w-3.5" />
 				Following
@@ -99,7 +99,7 @@ export default function FollowButton({ username }: FollowButtonProps) {
 							unfollow.mutate(undefined);
 							setOpen(false);
 						}}
-						className="border-brand-border flex w-full items-center gap-2.5 border-t px-4 py-2.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+						className="border-brand-border dark:hover:bg-brand-hero flex w-full items-center gap-2.5 border-t px-4 py-2.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
 					>
 						<BellOff className="h-4 w-4" />
 						Unfollow

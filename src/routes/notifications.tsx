@@ -100,7 +100,7 @@ function NotificationsScreen() {
 						<button
 							onClick={() => query.fetchNextPage()}
 							disabled={query.isFetchingNextPage}
-							className="border-brand-border text-brand-dark hover:bg-brand-hero rounded-full border bg-white px-5 py-2 text-sm transition-colors disabled:opacity-60"
+							className="border-brand-border text-brand-dark hover:bg-brand-hero dark:bg-brand-surface rounded-full border bg-white px-5 py-2 text-sm transition-colors disabled:opacity-60"
 						>
 							{query.isFetchingNextPage ? "Loading…" : "Load more"}
 						</button>

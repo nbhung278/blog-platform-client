@@ -65,7 +65,7 @@ export default function PostActionBar({
 					type="button"
 					onClick={onOpenComments}
 					aria-label="Open comments"
-					className="group flex items-center gap-2 text-gray-500 transition-colors hover:text-amber-500"
+					className="group dark:text-brand-mid flex items-center gap-2 text-gray-500 transition-colors hover:text-amber-500"
 				>
 					<MessageSquare className="h-5 w-5" />
 					<span className="text-sm font-medium tabular-nums">{formatCount(commentCount)}</span>
@@ -77,7 +77,7 @@ export default function PostActionBar({
 					type="button"
 					onClick={onOpenShare}
 					aria-label="Share post"
-					className="flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:text-amber-500"
+					className="dark:text-brand-mid flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:text-amber-500"
 				>
 					<Share2 className="h-5 w-5" />
 				</button>
@@ -88,7 +88,7 @@ export default function PostActionBar({
 					aria-label={saved ? "Remove from saved" : "Save post"}
 					aria-pressed={saved}
 					className={`flex h-10 w-10 items-center justify-center transition-colors ${
-						saved ? "text-amber-500" : "text-gray-500 hover:text-amber-500"
+						saved ? "text-amber-500" : "dark:text-brand-mid text-gray-500 hover:text-amber-500"
 					}`}
 				>
 					<Bookmark className={`h-5 w-5 ${saved ? "fill-current" : ""}`} />

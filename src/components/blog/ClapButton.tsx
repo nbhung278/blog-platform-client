@@ -80,7 +80,7 @@ export default function ClapButton({
 				disabled={isPending}
 				aria-label={atMax ? "Max claps reached" : "Clap"}
 				className={`group relative flex ${buttonSize} items-center justify-center rounded-full transition-all ${
-					myCount > 0 ? "text-brand-mid" : "hover:text-brand-mid text-gray-500"
+					myCount > 0 ? "text-brand-mid" : "hover:text-brand-mid dark:text-brand-mid text-gray-500"
 				} ${isPending && atMax ? "cursor-not-allowed opacity-60" : ""} ${
 					!isPending ? "active:scale-90" : ""
 				}`}
@@ -95,7 +95,7 @@ export default function ClapButton({
 					</span>
 				))}
 			</button>
-			<span className={`${textSize} font-medium text-gray-700 tabular-nums`}>
+			<span className={`${textSize} dark:text-brand-mid font-medium text-gray-700 tabular-nums`}>
 				{formatCount(count)}
 			</span>
 		</div>

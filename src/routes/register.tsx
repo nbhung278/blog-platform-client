@@ -71,7 +71,7 @@ export default function RegisterPage() {
 		setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
 	const inputClass =
-		"w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
+		"w-full rounded-xl border border-brand-border bg-white dark:bg-brand-hero px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
 	if (step.kind === "otp") {
 		return (
@@ -93,12 +93,12 @@ export default function RegisterPage() {
 			>
 				<div className="space-y-6">
 					{verify.error && (
-						<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+						<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
 							{formatApiError(verify.error, "Invalid or expired code")}
 						</p>
 					)}
 					{step.devCode && (
-						<p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+						<p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
 							Dev mode — code: <span className="font-mono">{step.devCode}</span>
 						</p>
 					)}
@@ -107,7 +107,7 @@ export default function RegisterPage() {
 						type="button"
 						onClick={handleVerify}
 						disabled={verify.isPending || code.length !== 6}
-						className="bg-brand-dark hover:bg-brand-mid w-full rounded-xl py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+						className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream w-full rounded-xl py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
 					>
 						{verify.isPending ? "Verifying..." : "Verify and continue"}
 					</button>
@@ -151,7 +151,7 @@ export default function RegisterPage() {
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					{register.error && (
-						<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+						<p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
 							{formatApiError(register.error, "Registration failed")}
 						</p>
 					)}
@@ -212,7 +212,7 @@ export default function RegisterPage() {
 					<button
 						type="submit"
 						disabled={register.isPending || !passwordOk}
-						className="bg-brand-dark hover:bg-brand-mid w-full rounded-xl py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+						className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream w-full rounded-xl py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
 					>
 						{register.isPending ? "Sending code..." : "Sign Up"}
 					</button>

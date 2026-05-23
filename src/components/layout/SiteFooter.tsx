@@ -108,8 +108,8 @@ export default function SiteFooter() {
 				<div className="grid grid-cols-2 gap-10 md:grid-cols-5">
 					<div className="col-span-2 md:col-span-2">
 						<Link to="/" className="flex items-end gap-2.5">
-							<div className="bg-white px-2.5 py-1.5">
-								<span className="font-serif text-lg font-bold tracking-wide text-black">
+							<div className="bg-brand px-2.5 py-1.5">
+								<span className="font-serif text-lg font-bold tracking-wide text-white">
 									<span className="text-2xl">S</span>trix
 								</span>
 							</div>

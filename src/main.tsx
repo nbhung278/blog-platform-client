@@ -1,5 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+
+// Apply stored theme before React renders to avoid a brief flash
+try {
+	if (localStorage.getItem("theme") === "dark") {
+		document.documentElement.classList.add("dark");
+	}
+} catch {
+	// localStorage unavailable in private browsing or restricted contexts
+}
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routes";

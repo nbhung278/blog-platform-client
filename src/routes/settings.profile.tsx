@@ -11,7 +11,7 @@ import RequireAuth from "@/components/RequireAuth";
 import ReadingPrivacySection from "@/components/blog/ReadingPrivacySection";
 
 const INPUT_CLASS =
-	"w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50";
+	"w-full rounded-xl border border-brand-border bg-white dark:bg-brand-hero px-4 py-3 text-sm text-brand-dark placeholder:text-brand-mid outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50";
 
 function getInitials(name: string) {
 	const parts = name.trim().split(/\s+/);
@@ -135,7 +135,7 @@ function ProfileSettings() {
 										className="border-brand-border h-20 w-20 rounded-full border-2 object-cover"
 									/>
 								) : (
-									<div className="bg-brand-dark flex h-20 w-20 items-center justify-center rounded-full font-serif text-2xl font-bold text-white">
+									<div className="bg-brand-dark dark:text-brand-cream flex h-20 w-20 items-center justify-center rounded-full font-serif text-2xl font-bold text-white">
 										{initial}
 									</div>
 								)}
@@ -251,7 +251,7 @@ function ProfileSettings() {
 						<button
 							type="submit"
 							disabled={updateProfile.isPending}
-							className="bg-brand-dark hover:bg-brand-mid w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+							className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
 						>
 							{updateProfile.isPending ? "Saving…" : "Save changes"}
 						</button>
@@ -361,7 +361,7 @@ function ProfileSettings() {
 						<button
 							type="submit"
 							disabled={changePassword.isPending}
-							className="bg-brand-dark hover:bg-brand-mid w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+							className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
 						>
 							{changePassword.isPending ? "Updating…" : "Update password"}
 						</button>
@@ -485,7 +485,7 @@ function SetPasswordSection() {
 				<button
 					type="submit"
 					disabled={setPassword.isPending || !passwordOk}
-					className="bg-brand-dark hover:bg-brand-mid w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
+					className="bg-brand-dark hover:bg-brand-mid dark:text-brand-cream w-full py-3 text-sm font-medium text-white transition-colors disabled:opacity-60"
 				>
 					{setPassword.isPending ? "Setting…" : "Set password"}
 				</button>
