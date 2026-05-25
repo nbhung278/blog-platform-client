@@ -87,3 +87,31 @@ export function useMarkAllRead() {
 		},
 	});
 }
+
+export function useDeleteNotification() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: async (id: string) => {
+			await api.delete(`/notifications/${id}`);
+			return id;
+		},
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["notifications"] });
+		},
+	});
+}
+
+export function useDeleteReadNotifications() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: async () => {
+			const res = await api.post<{ success: boolean; deleted: number }>(
+				"/notifications/delete-read",
+			);
+			return res.data.deleted;
+		},
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["notifications"] });
+		},
+	});
+}

@@ -1,11 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
-import { CheckCheck } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import NotificationItemSkeleton from "@/components/layout/NotificationItemSkeleton";
 import {
 	useAllNotifications,
+	useDeleteNotification,
+	useDeleteReadNotifications,
 	useMarkAllRead,
 	useMarkRead,
 	type NotificationItem,
@@ -26,11 +27,14 @@ function NotificationsScreen() {
 	const query = useAllNotifications(true);
 	const markRead = useMarkRead();
 	const markAllRead = useMarkAllRead();
+	const deleteOne = useDeleteNotification();
+	const deleteRead = useDeleteReadNotifications();
 
 	const items = query.data?.pages.flatMap((p) => p.items) ?? [];
 	const hasUnread = items.some((n) => !n.isRead);
+	const hasRead = items.some((n) => n.isRead);
 
-	const handleClick = (n: NotificationItem) => {
+	const handleNavigate = (n: NotificationItem) => {
 		if (!n.isRead) markRead.mutate([n.id]);
 		if (n.type === "follow" && n.actor) {
 			navigate({ to: "/blog/$username", params: { username: n.actor.username } });
@@ -48,18 +52,28 @@ function NotificationsScreen() {
 			<SiteHeader />
 
 			<main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
-				<div className="mb-8 flex items-center justify-between">
+				<div className="mb-8 flex items-center justify-between gap-3">
 					<h1 className="text-brand-dark font-serif text-3xl font-bold">Notifications</h1>
-					{hasUnread && (
-						<button
-							onClick={() => markAllRead.mutate()}
-							disabled={markAllRead.isPending}
-							className="text-brand-mid hover:text-brand-dark flex items-center gap-1.5 text-sm transition-colors disabled:opacity-60"
-						>
-							<CheckCheck className="h-4 w-4" />
-							Mark all as read
-						</button>
-					)}
+					<div className="flex items-center gap-5">
+						{hasRead && (
+							<button
+								onClick={() => deleteRead.mutate()}
+								disabled={deleteRead.isPending}
+								className="text-brand-mid hover:text-brand-dark text-xs transition-colors hover:underline disabled:opacity-60"
+							>
+								Clear read notifications
+							</button>
+						)}
+						{hasUnread && (
+							<button
+								onClick={() => markAllRead.mutate()}
+								disabled={markAllRead.isPending}
+								className="text-brand-mid hover:text-brand-dark text-xs transition-colors hover:underline disabled:opacity-60"
+							>
+								Mark all as read
+							</button>
+						)}
+					</div>
 				</div>
 
 				{query.isLoading ? (
@@ -77,20 +91,33 @@ function NotificationsScreen() {
 				) : (
 					<div className="border-brand-border divide-brand-border bg-brand-surface divide-y rounded-lg border">
 						{items.map((n) => (
-							<button
+							<div
 								key={n.id}
-								onClick={() => handleClick(n)}
-								className={`hover:bg-brand-hero flex w-full items-start gap-3 px-5 py-4 text-left transition-colors ${
+								className={`group hover:bg-brand-hero flex items-start gap-3 px-5 py-4 transition-colors ${
 									!n.isRead ? "bg-brand-hero/40" : ""
 								}`}
 							>
-								<Avatar item={n} />
-								<div className="min-w-0 flex-1">
-									<p className="text-brand-dark text-sm leading-snug">{describeNotification(n)}</p>
-									<p className="text-brand-mid mt-0.5 text-xs">{formatRelative(n.createdAt)}</p>
-								</div>
-								{!n.isRead && <span className="bg-brand mt-1.5 h-2 w-2 shrink-0 rounded-full" />}
-							</button>
+								<button
+									onClick={() => handleNavigate(n)}
+									className="flex flex-1 items-start gap-3 text-left"
+								>
+									<Avatar item={n} />
+									<div className="min-w-0 flex-1">
+										<p className="text-brand-dark text-sm leading-snug">
+											{describeNotification(n)}
+										</p>
+										<p className="text-brand-mid mt-0.5 text-xs">{formatRelative(n.createdAt)}</p>
+									</div>
+									{!n.isRead && <span className="bg-brand mt-1.5 h-2 w-2 shrink-0 rounded-full" />}
+								</button>
+								<button
+									type="button"
+									onClick={() => deleteOne.mutate(n.id)}
+									className="text-brand-mid hover:text-brand-dark ml-2 shrink-0 self-center text-xs opacity-0 transition-all group-hover:opacity-100 hover:underline focus-visible:opacity-100"
+								>
+									Delete
+								</button>
+							</div>
 						))}
 					</div>
 				)}
