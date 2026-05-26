@@ -105,6 +105,16 @@ const blogUserRoute = createRoute({
 	component: BlogUserPage,
 });
 
+// /author/$username is an SEO-friendly alias for the same author profile page.
+// Backend JSON-LD (share.ts) and the RSS Atom feed (feed.ts) publish author
+// URLs as /author/<username>, so we mirror that path here instead of forcing
+// a redirect — Google penalises redirected canonicals as soft-404s.
+const authorRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/author/$username",
+	component: BlogUserPage,
+});
+
 const blogPostRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/blog/$username/$slug",
@@ -192,6 +202,7 @@ export const routeTree = rootRoute.addChildren([
 	googleSuccessRoute,
 	editorRoute,
 	blogUserRoute,
+	authorRoute,
 	blogPostRoute,
 	searchRoute,
 	categoryRoute,
